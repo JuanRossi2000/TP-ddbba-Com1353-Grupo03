@@ -130,6 +130,7 @@ BEGIN
 		empleadoID int NOT NULL,
 		pagoID int NOT NULL,
 		estadoId int NOT NULL,
+		precioTotal decimal(11,2),
 		identificadorPago varchar(25),
 		habilitado BIT DEFAULT 1,
 		FOREIGN KEY (estadoId) REFERENCES ventas.Estado(id),

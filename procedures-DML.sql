@@ -668,6 +668,108 @@ BEGIN
 END;
 GO
 
+IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'altaFactura' AND schema_id = SCHEMA_ID('ventas'))
+BEGIN
+	EXEC('CREATE PROCEDURE ventas.altaFactura
+		(
+		@productosXML XML,
+		@tipoFactura CHAR(1),
+		@empleadoId INT,
+		@clienteId INT,
+		@pagoId INT,
+		@identPago VARCHAR(25)
+		)
+	AS
+	BEGIN
+
+		DECLARE @nroFacturaFormateada CHAR(11);
+		DECLARE @nroFacturaSinFormatear INT;
+		DECLARE @idFactura INT;
+		DECLARE @descMedioPago VARCHAR(21);
+		DECLARE @idEstado INT;
+
+	BEGIN TRANSACTION
+
+	BEGIN TRY
+
+		-- Generar un número aleatorio de 9 dígitos
+		SET @nroFacturaSinFormatear = ABS(CHECKSUM(NEWID())) % 900000000 + 100000000; 
+
+		-- Formatearlo como XXX-XX-XXXX
+		SET @nroFacturaFormateada = STUFF(STUFF(CAST(@nroFacturaSinFormatear as char(9)), 4, 0, ''-''), 7, 0, ''-'');
+	
+	WHILE EXISTS (SELECT 1 FROM Factura WHERE nro = @nroFacturaFormateada)
+		BEGIN
+			-- Si el numero de factura ya existe dentro de la tabla genero uno nuevo
+			SET @nroFacturaSinFormatear = ABS(CHECKSUM(NEWID())) % 900000000 + 100000000; 
+
+			-- Formatearlo como XXX-XX-XXXX
+			SET @nroFacturaFormateada = STUFF(STUFF(CAST(@nroFacturaSinFormatear as varchar(9)), 4, 0, ''-''), 7, 0, ''-'');
+	END
+
+		SET @descMedioPago = (SELECT descripcion FROM ventas.MedioPago WHERE id = @pagoId AND habilitado = 1);
+
+		SET @Idestado =
+			CASE 
+				WHEN @descMedioPago = ''Tarjeta Crédito'' THEN 
+					(SELECT id FROM ventas.Estado WHERE descripcion = ''Pendiente'')
+				WHEN @descMedioPago = ''Efectivo'' THEN 
+					(SELECT id FROM ventas.Estado WHERE descripcion = ''Pagado'')
+				WHEN @descMedioPago = ''Billetera Electronica'' THEN 
+					(SELECT id FROM ventas.Estado WHERE descripcion = ''Pagado'')
+				ELSE 
+					NULL  -- En caso de que no coincida con ninguno de los valores
+		END;
+
+
+		INSERT INTO ventas.Factura (nro, tipo, fechaHora, empleadoID, clienteID, pagoID, estadoId, identificadorPago)
+		VALUES (@nroFacturaFormateada,@tipoFactura, CAST(getdate() AS smalldatetime), @empleadoId, @clienteId, @pagoId, @idEstado, @identPago)
+
+		SET @idFactura = (SELECT id FROM ventas.Factura WHERE nro = @nroFacturaFormateada AND habilitado = 1);
+
+		INSERT INTO ventas.DetalleFactura (facturaID, item, cantidad, precio, productoID)
+		SELECT 
+			@idFactura, 
+			x.p.value(''(id/text())[1]'', ''INT''),
+			x.p.value(''(cantComprada/text())[1]'', ''INT''),
+			p.precio,
+			x.p.value(''(idProducto/text())[1]'', ''INT'')
+		FROM @productosXML.nodes(''/productos/producto'') AS x(p)
+		INNER JOIN productos.Producto p ON x.p.value(''(idProducto/text())[1]'', ''INT'') = p.id;
+
+
+	COMMIT TRANSACTION
+	END TRY
+
+	BEGIN CATCH
+		ROLLBACK TRANSACTION
+		RAISERROR(''Error al insertar los datos. La transacción ha sido revertida.'', 16, 1)
+	END CATCH
+
+	END;')
+END;
+GO
+
+IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'bajaFactura' AND schema_id = SCHEMA_ID('ventas'))
+BEGIN
+	EXEC('CREATE PROCEDURE ventas.bajaFactura
+		@nro CHAR(11)
+	AS
+	BEGIN
+		IF EXISTS (SELECT 1 FROM ventas.Factura where nro = @nro)
+		BEGIN
+			UPDATE ventas.Factura
+			SET habilitado = 0
+			WHERE nro = @nro
+			PRINT ''La factura se dio de baja correctamente''
+		END
+	ELSE
+	BEGIN
+		RAISERROR(''La sucursal solicitada no existe.'', 16, 1)
+	END');
+END;
+GO
+
 /*--SP'S TABLA DETALLEFACTURA--*/
 IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'actualizaDetalleFactura' AND schema_id = SCHEMA_ID('ventas'))
 BEGIN
@@ -695,47 +797,3 @@ BEGIN
 	END;')
 END;
 GO
-
-CREATE FUNCTION rrhh.GenerarCuil(@dni INT)
-RETURNS VARCHAR(11)
-AS
-BEGIN
-    -- Convertir el DNI a una cadena de 8 caracteres, completando con ceros a la izquierda si es necesario
-    DECLARE @dniStr CHAR(8) = CAST(@dni AS VARCHAR(8));
-
-    -- Seleccionar un prefijo de forma determinista usando el hash del DNI
-    -- Se usan los prefijos 20, 23, 24 y 27
-    DECLARE @mod INT = ABS(CHECKSUM(@dni)) % 4;
-    DECLARE @prefijo INT = CASE @mod
-                            WHEN 0 THEN 20
-                            WHEN 1 THEN 23
-                            WHEN 2 THEN 24
-                            WHEN 3 THEN 27
-                          END;
-
-    -- Convertir el prefijo a una cadena de 2 caracteres
-    DECLARE @prefijoStr CHAR(2) = CAST(@prefijo AS VARCHAR(2))
-
-    -- Calcular el dígito verificador usando la fórmula del módulo 11
-    DECLARE @suma INT =
-          CAST(SUBSTRING(@prefijoStr, 1, 1) AS INT) * 5 +
-          CAST(SUBSTRING(@prefijoStr, 2, 1) AS INT) * 4 +
-          CAST(SUBSTRING(@dniStr, 1, 1) AS INT)   * 3 +
-          CAST(SUBSTRING(@dniStr, 2, 1) AS INT)   * 2 +
-          CAST(SUBSTRING(@dniStr, 3, 1) AS INT)   * 7 +
-          CAST(SUBSTRING(@dniStr, 4, 1) AS INT)   * 6 +
-          CAST(SUBSTRING(@dniStr, 5, 1) AS INT)   * 5 +
-          CAST(SUBSTRING(@dniStr, 6, 1) AS INT)   * 4 +
-          CAST(SUBSTRING(@dniStr, 7, 1) AS INT)   * 3 +
-          CAST(SUBSTRING(@dniStr, 8, 1) AS INT)   * 2;
-
-    DECLARE @r INT = @suma % 11;
-    DECLARE @digito INT = 11 - @r;
-
-    IF @digito = 11 SET @digito = 0;
-    IF @digito = 10 SET @digito = 9;
-
-    RETURN @prefijoStr + @dniStr + CAST(@digito AS CHAR(1));
-END;
-GO
-
