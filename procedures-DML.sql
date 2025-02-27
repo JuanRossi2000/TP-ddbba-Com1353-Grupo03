@@ -416,7 +416,7 @@ BEGIN
 					FROM ventas.MedioPago
 					WHERE id = @id)
 		BEGIN
-			IF (@descripcionEsp <> '''' OR @descripcionEsp IS NULL OR @descripcionIng <> '''' OR @descripcionING IS NULL)
+			IF (@descripcionEsp <> '''' OR @descripcionIng <> '''')
 			BEGIN
 				UPDATE ventas.MedioPago
 				SET descripcionEsp = COALESCE(@descripcionEsp, descripcionEsp),
@@ -634,25 +634,31 @@ GO
 IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'actualizaFactura' AND schema_id = SCHEMA_ID('ventas'))
 BEGIN
 	EXEC('CREATE PROCEDURE ventas.actualizaFactura 
-		@id int,
+		@nro char(11),
 		@tipo char(1) = NULL,
+		@tipoCliente VARCHAR(20),
+		@genero VARCHAR(20) = NULL,
 		@fechaHora smalldatetime = NULL,
 		@empleadoID int = NULL,
-		@clienteID int = NULL,
-		@pagoID int = NULL
+		@pagoID int = NULL,
+		@estadoID int = NULL,
+		@identificadorPago VARCHAR(25) = NULL		
 	AS
 	BEGIN
 		IF EXISTS(	SELECT 1
 					FROM ventas.Factura
-					WHERE id = @id)
+					WHERE nro= @nro)
 		BEGIN
 			UPDATE ventas.Factura
 			SET	tipo = COALESCE(@tipo, tipo)
+			, tipoCliente = COALESCE(@tipoCliente, tipoCliente)
+			, genero = COALESCE(@genero, genero)
 			, fechaHora = COALESCE(@fechaHora, fechaHora)
 			, empleadoID = COALESCE(@empleadoID, empleadoID)
-			, clienteID = COALESCE(@clienteID, clienteID)
 			, pagoID = COALESCE(@pagoID, pagoID)
-			WHERE id = @id
+			, estadoID = COALESCE(@estadoID, estadoID)
+			, identificadorPago = COALESCE(@identificadorPago, identificadorPago)
+			WHERE nro = @nro
 		END
 		ELSE
 		BEGIN 
