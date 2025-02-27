@@ -73,20 +73,29 @@ EXEC ventas.actualizaCliente @id = 1, @habilitado = 1
 
 
 /*--SP'S TABLA MEDIOPAGO--*/
-EXEC ventas.altaMedioPago @descripcion = ''
---> No se puede crear un medio de pago con descripción vacía
+EXEC ventas.altaMedioPago @descripcionESP = '', @descripcionING = ''
+--> Ninguna de ambas descripciones puede estar vacia
 
-EXEC ventas.altaMedioPago @descripcion = 'Credito'
---> SELECT * FROM ventas.MedioPago --> Descripción es correcta
+EXEC ventas.altaMedioPago @descripcionESP = 'Billetera Electronica', @descripcionING = 'Ewallet'
+--> SELECT * FROM ventas.MedioPago --> Descripción son correctas
 
-EXEC ventas.altaMedioPago @descripcion = 'Credito'
+EXEC ventas.altaMedioPago @descripcionEsp = 'Billetera Electronica', @descripcionING = 'PRUEBA123'
 --> No se pueden insertar 2 registros con la misma descripción
 
-EXEC ventas.actualizaMedioPago @id = 1, @descripcion = ''
+EXEC ventas.altaMedioPago @descripcionEsp = 'PRUEBA123', @descripcionING = 'Ewallet'
+--> Lo mismo ocurre con el campo en ingles
+
+EXEC ventas.actualizaMedioPago @id = 1, @descripcionIng = ''
 --> Nuevamente, la descripción no puede ser vacía
 
-EXEC ventas.actualizaMedioPago @id = 1, @descripcion = 'Debito'
---> SELECT * FROM ventas.MedioPago --> Se actualiza y la descripción es correcta
+EXEC ventas.actualizaMedioPago @id = 1, @descripcionEsp = ''
+--> La descripción Espanol tampoco no puede ser vacía
+
+EXEC ventas.actualizaMedioPago @id = 1, @descripcionEsp = 'PRUEBA'
+--> SELECT * FROM ventas.MedioPago --> Se actualiza y la descripción ESPANOL es correcta
+
+EXEC ventas.actualizaMedioPago @id = 1, @descripcionING = 'PRUEBA'
+--> SELECT * FROM ventas.MedioPago --> Se actualiza y la descripción INGLES es correcta
 
 EXEC ventas.bajaMedioPago 1
 --> SELECT * FROM ventas.MedioPago --> Baja lógica al registro con id enviada como parametro.
