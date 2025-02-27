@@ -140,7 +140,7 @@ BEGIN
 		FOREIGN KEY (estadoId) REFERENCES ventas.Estado(id),
 		FOREIGN KEY (empleadoID) REFERENCES rrhh.Empleado(legajo),
 		FOREIGN KEY (pagoID) REFERENCES ventas.MedioPago(id),
-		CONSTRAINT CHK_genero_factura CHECK (genero = 'M' OR genero = 'F'),
+		CONSTRAINT CHK_genero_factura CHECK (genero = 'Male' OR genero = 'Female'),
 		CONSTRAINT CHK_nro CHECK (nro LIKE '[0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]')
 	);
 END;
