@@ -689,6 +689,42 @@ BEGIN
 		DECLARE @descMedioPago VARCHAR(21);
 		DECLARE @idEstado INT;
 
+		IF @productosXML IS NULL OR @productosXML.exist(''/producto/producto'') = 0
+		BEGIN
+			RAISERROR(''El XML de productos no puede ser nulo o vacío.'', 16, 1);
+			RETURN;
+		END
+
+		IF @tipoFactura IS NULL
+		BEGIN
+			RAISERROR(''El tipo de factura no puede ser nulo.'', 16, 1);
+			RETURN;
+		END
+
+		IF @empleadoId IS NULL
+		BEGIN
+			RAISERROR(''El ID del empleado no puede ser nulo.'', 16, 1);
+			RETURN;
+		END
+
+		IF @clienteId IS NULL
+		BEGIN
+			RAISERROR(''El ID del cliente no puede ser nulo.'', 16, 1);
+			RETURN;
+		END
+
+		IF @pagoId IS NULL
+		BEGIN
+			RAISERROR(''El ID del medio de pago no puede ser nulo.'', 16, 1);
+			RETURN;
+		END
+
+		IF @identPago IS NULL OR LEN(@identPago) = 0
+		BEGIN
+			RAISERROR(''El identificador de pago no puede ser nulo o vacío.'', 16, 1);
+			RETURN;
+		END
+
 	BEGIN TRANSACTION
 
 	BEGIN TRY
@@ -766,7 +802,7 @@ BEGIN
 		END;
 		ELSE
 		BEGIN
-			RAISERROR(''La sucursal solicitada no existe.'', 16, 1);
+			RAISERROR(''La factura solicitada no existe.'', 16, 1);
 		END;
 	END');
 END;
