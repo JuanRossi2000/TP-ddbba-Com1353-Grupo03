@@ -670,7 +670,7 @@ GO
 
 IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'altaFactura' AND schema_id = SCHEMA_ID('ventas'))
 BEGIN
-	EXEC('CREATE PROCEDURE ventas.altaFactura
+	EXEC('CREATE or alter PROCEDURE ventas.altaFactura
 		(
 		@productosXML XML,
 		@tipoFactura CHAR(1),
@@ -689,37 +689,43 @@ BEGIN
 		DECLARE @descMedioPago VARCHAR(21);
 		DECLARE @idEstado INT;
 
-		IF @productosXML IS NULL OR @productosXML.exist(''/producto/producto'') = 0
+		IF @productosXML IS NULL OR @productosXML.exist(''/productos/producto'') = 0
 		BEGIN
 			RAISERROR(''El XML de productos no puede ser nulo o vacío.'', 16, 1);
 			RETURN;
 		END
 
-		IF @tipoFactura IS NULL
+		IF ISNULL(@tipoFactura, '''') = ''''
 		BEGIN
-			RAISERROR(''El tipo de factura no puede ser nulo.'', 16, 1);
+			RAISERROR(''El tipo de factura no puede ser vacio.'', 16, 1);
 			RETURN;
 		END
 
-		IF @empleadoId IS NULL
+		IF @empleadoId <= 0
 		BEGIN
-			RAISERROR(''El ID del empleado no puede ser nulo.'', 16, 1);
+			RAISERROR(''El ID del empleado no puede ser menor o igual a cero.'', 16, 1);
 			RETURN;
 		END
 
-		IF @clienteId IS NULL
+		IF ISNULL(@tipoCliente, '''') = ''''
 		BEGIN
-			RAISERROR(''El ID del cliente no puede ser nulo.'', 16, 1);
+			RAISERROR(''El tipo del cliente no puede ser vacio.'', 16, 1);
 			RETURN;
 		END
 
-		IF @pagoId IS NULL
+		IF ISNULL(@generoCliente, '''') = ''''
 		BEGIN
-			RAISERROR(''El ID del medio de pago no puede ser nulo.'', 16, 1);
+			RAISERROR(''El genero del cliente no puede ser nulo.'', 16, 1);
 			RETURN;
 		END
 
-		IF @identPago IS NULL OR LEN(@identPago) = 0
+		IF @pagoId <= 0
+		BEGIN
+			RAISERROR(''El ID del medio de pago no puede ser menor o igual a 0.'', 16, 1);
+			RETURN;
+		END
+
+		IF ISNULL(@identPago, '''') = ''''
 		BEGIN
 			RAISERROR(''El identificador de pago no puede ser nulo o vacío.'', 16, 1);
 			RETURN;

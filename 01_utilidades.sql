@@ -1,5 +1,7 @@
---FUNCION QUE UTILIZARA EL PROCEDURE reporteMensualPorTrimestreTurno
+USE Aurora_SA;
+GO
 
+--FUNCION QUE UTILIZARA EL PROCEDURE reporteMensualPorTrimestreTurno
 IF NOT EXISTS(SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('utilidades.getTrimestre') AND type = 'FN')
 BEGIN
 	EXEC('CREATE FUNCTION utilidades.getTrimestre

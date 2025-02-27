@@ -154,3 +154,117 @@ EXEC productos.bajaProducto @id = 1
 EXEC productos.actualizaProducto @id = 1, @habilitado = 1
 --> SELECT * FROM productos.Producto --> Los datos se actualizaron tal cual fueron enviados en el SP.
 
+/*--SP'S TABLA PRODUCTO--*/
+EXEC ventas.altaFactura @productosXML = '', @tipoFactura = 'A', @empleadoId = 1, @tipoCliente = 'Member', @generoCliente = 'Female', @pagoId = 1, @identPago = '4660-1046-8238-6585'
+-- No se puede insertar una factura con un XML vacio
+
+EXEC ventas.altaFactura 
+	@productosXML =
+	'<productos>
+		<producto>
+			<id>1</id>
+			<idProducto>10</idProducto>
+			<cantComprada>2</cantComprada>
+		</producto>
+	</productos>', 
+		@tipoFactura = '', @empleadoId = 1, @tipoCliente = 'Member', @generoCliente = 'Female', @pagoId = 1, @identPago = '4660-1046-8238-6585'
+--> No se puede insertar un tipo de factura vacio
+
+EXEC ventas.altaFactura 
+	@productosXML =
+	'<productos>
+		<producto>
+			<id>1</id>
+			<idProducto>10</idProducto>
+			<cantComprada>2</cantComprada>
+		</producto>
+	</productos>', 
+		@tipoFactura = 'A', @empleadoId = 0, @tipoCliente = 'Member', @generoCliente = 'Female', @pagoId = 1, @identPago = '4660-1046-8238-6585'
+--> No se puede insertar un id de empleado con valor 0
+
+EXEC ventas.altaFactura 
+	@productosXML =
+	'<productos>
+		<producto>
+			<id>1</id>
+			<idProducto>10</idProducto>
+			<cantComprada>2</cantComprada>
+		</producto>
+	</productos>', 
+		@tipoFactura = 'A', @empleadoId = -1999, @tipoCliente = 'Member', @generoCliente = 'Female', @pagoId = 1, @identPago = '4660-1046-8238-6585'
+--> No se puede insertar un id de empleado con valor 0
+
+EXEC ventas.altaFactura 
+	@productosXML =
+	'<productos>
+		<producto>
+			<id>1</id>
+			<idProducto>10</idProducto>
+			<cantComprada>2</cantComprada>
+		</producto>
+	</productos>', 
+		@tipoFactura = 'A', @empleadoId = 1, @tipoCliente = '', @generoCliente = 'Female', @pagoId = 1, @identPago = '4660-1046-8238-6585'
+--> No se puede insertar un tipo de cliente vacio
+
+EXEC ventas.altaFactura 
+	@productosXML =
+	'<productos>
+		<producto>
+			<id>1</id>
+			<idProducto>10</idProducto>
+			<cantComprada>2</cantComprada>
+		</producto>
+	</productos>', 
+		@tipoFactura = 'A', @empleadoId = 1, @tipoCliente = 'Member', @generoCliente = '', @pagoId = 1, @identPago = '4660-1046-8238-6585'
+--> No se puede insertar un genero de cliente vacio
+
+EXEC ventas.altaFactura 
+	@productosXML =
+	'<productos>
+		<producto>
+			<id>1</id>
+			<idProducto>10</idProducto>
+			<cantComprada>2</cantComprada>
+		</producto>
+	</productos>', 
+		@tipoFactura = 'A', @empleadoId = 1, @tipoCliente = 'Member', @generoCliente = 'Male', @pagoId = 0, @identPago = '4660-1046-8238-6585'
+--> No se puede insertar un id de medio de pago igual a cero
+
+EXEC ventas.altaFactura 
+	@productosXML =
+	'<productos>
+		<producto>
+			<id>1</id>
+			<idProducto>10</idProducto>
+			<cantComprada>2</cantComprada>
+		</producto>
+	</productos>', 
+		@tipoFactura = 'A', @empleadoId = 1, @tipoCliente = 'Member', @generoCliente = 'Male', @pagoId = -1000, @identPago = '4660-1046-8238-6585'
+--> No se puede insertar un id de medio de pago menor a cero
+
+EXEC ventas.altaFactura 
+	@productosXML =
+	'<productos>
+		<producto>
+			<id>1</id>
+			<idProducto>10</idProducto>
+			<cantComprada>2</cantComprada>
+		</producto>
+	</productos>', 
+		@tipoFactura = 'A', @empleadoId = 1, @tipoCliente = 'Member', @generoCliente = 'Male', @pagoId = 1, @identPago = ''
+--> No se puede insertar un identificador de pago vacio
+
+EXEC ventas.altaFactura 
+	@productosXML =
+	'<productos>
+		<producto>
+			<id>1</id>
+			<idProducto>10</idProducto>
+			<cantComprada>2</cantComprada>
+		</producto>
+	</productos>', 
+		@tipoFactura = 'A', @empleadoId = 1, @tipoCliente = 'Member', @generoCliente = 'Male', @pagoId = 1, @identPago = '4660-1046-8238-6585'
+--> SELECT * FROM ventas.Factura --> Se dio de alta correctamente
+
+EXEC ventas.bajaFactura @id = 1
+--> SELECT * FROM ventas.Factura --> La baja logica se llevo a cabo correctamente.
