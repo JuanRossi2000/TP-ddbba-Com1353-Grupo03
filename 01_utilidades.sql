@@ -1,5 +1,4 @@
-USE Aurora_SA;
-GO
+use Aurora_SA
 
 --FUNCION QUE UTILIZARA EL PROCEDURE reporteMensualPorTrimestreTurno
 IF NOT EXISTS(SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('utilidades.getTrimestre') AND type = 'FN')
@@ -71,14 +70,18 @@ BEGIN
 END;
 GO
 
+-----------------------------------------------------------------------------------------------------------------------
+-- Esta funcion fue el resultado de sudor y sangre, no estamos orgullosos pero tampoco arrepentidos, gracias por leer
+-----------------------------------------------------------------------------------------------------------------------
 IF NOT EXISTS(SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('utilidades.remplazar') AND type = 'FN')
 BEGIN
-	EXEC('CREATE FUNCTION utilidades.remplazar (@cadena VARCHAR(MAX))
-	RETURNS VARCHAR(MAX)
-	AS
-	BEGIN
-		RETURN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(@cadena, ''√±'', ''Ò''), ''√°'', ''·''), ''√©'', ''È''), ''√∫'', ''˙''), ''√≥'', ''Û''), ''√≠'', ''Ì''), ''¬'', '''')
-	END');
+	EXEC('
+CREATE FUNCTION utilidades.remplazar (@cadena VARCHAR(MAX))
+RETURNS VARCHAR(MAX)
+AS
+BEGIN
+    RETURN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(@cadena,''1¬∫'',''1∫''),''N¬∫'',''N∫''),''¬∫'',''˙''),''¬'',''''),''√É'',''''),''Âçò'',''Ò''),''√ë'',''—''),''√Å'', ''¡''),''√±'', ''Ò''),''√°'', ''·''), ''√©'', ''È''), ''√∫'', ''˙''), ''√≥'', ''Û''), ''√≠'', ''Ì'')
+END');
 END;
 GO
 
