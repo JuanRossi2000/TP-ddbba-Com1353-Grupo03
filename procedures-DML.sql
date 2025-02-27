@@ -675,7 +675,8 @@ BEGIN
 		@productosXML XML,
 		@tipoFactura CHAR(1),
 		@empleadoId INT,
-		@clienteId INT,
+		@tipoCliente VARCHAR(20),
+		@generoCliente VARCHAR(20),
 		@pagoId INT,
 		@identPago VARCHAR(25)
 		)
@@ -707,7 +708,7 @@ BEGIN
 			SET @nroFacturaFormateada = STUFF(STUFF(CAST(@nroFacturaSinFormatear as varchar(9)), 4, 0, ''-''), 7, 0, ''-'');
 	END
 
-		SET @descMedioPago = (SELECT descripcion FROM ventas.MedioPago WHERE id = @pagoId AND habilitado = 1);
+		SET @descMedioPago = (SELECT descripcionEsp FROM ventas.MedioPago WHERE id = @pagoId AND habilitado = 1);
 
 		SET @Idestado =
 			CASE 
@@ -722,8 +723,8 @@ BEGIN
 		END;
 
 
-		INSERT INTO ventas.Factura (nro, tipo, fechaHora, empleadoID, clienteID, pagoID, estadoId, identificadorPago)
-		VALUES (@nroFacturaFormateada,@tipoFactura, CAST(getdate() AS smalldatetime), @empleadoId, @clienteId, @pagoId, @idEstado, @identPago)
+		INSERT INTO ventas.Factura (nro, tipo, fechaHora, empleadoID, tipoCliente, genero, pagoID, estadoId, identificadorPago)
+		VALUES (@nroFacturaFormateada,@tipoFactura, CAST(getdate() AS smalldatetime), @empleadoId, @tipoCliente, @generoCliente, @pagoId, @idEstado, @identPago)
 
 		SET @idFactura = (SELECT id FROM ventas.Factura WHERE nro = @nroFacturaFormateada AND habilitado = 1);
 
@@ -753,19 +754,20 @@ GO
 IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'bajaFactura' AND schema_id = SCHEMA_ID('ventas'))
 BEGIN
 	EXEC('CREATE PROCEDURE ventas.bajaFactura
-		@nro CHAR(11)
+		@id int
 	AS
 	BEGIN
-		IF EXISTS (SELECT 1 FROM ventas.Factura where nro = @nro)
+		IF EXISTS (SELECT 1 FROM ventas.Factura WHERE id = @id)
 		BEGIN
 			UPDATE ventas.Factura
 			SET habilitado = 0
-			WHERE nro = @nro
-			PRINT ''La factura se dio de baja correctamente''
-		END
-	ELSE
-	BEGIN
-		RAISERROR(''La sucursal solicitada no existe.'', 16, 1)
+			WHERE id = @id
+			PRINT ''La factura se dio de baja correctamente'';
+		END;
+		ELSE
+		BEGIN
+			RAISERROR(''La sucursal solicitada no existe.'', 16, 1);
+		END;
 	END');
 END;
 GO

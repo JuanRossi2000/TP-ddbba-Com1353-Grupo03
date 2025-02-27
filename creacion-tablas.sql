@@ -25,7 +25,11 @@ BEGIN
 END;
 GO
 
-
+IF NOT EXISTS(	SELECT 1 FROM SYS.SCHEMAS WHERE name = 'utilidades')
+BEGIN
+	EXEC('CREATE SCHEMA utilidades')
+END;
+GO
 
 IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'rrhh' AND TABLE_NAME = 'Sucursal')
 BEGIN
@@ -175,4 +179,8 @@ BEGIN
 END;
 GO
 
-CREATE NONCLUSTERED INDEX nix_nroFactura on ventas.Factura(nro);
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'nix_nroFactura' AND object_id = OBJECT_ID('ventas.Factura'))
+BEGIN
+    CREATE NONCLUSTERED INDEX nix_nroFactura 
+    ON ventas.Factura(nro);
+END
