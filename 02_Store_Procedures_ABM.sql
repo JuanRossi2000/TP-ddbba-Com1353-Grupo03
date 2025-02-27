@@ -841,3 +841,58 @@ BEGIN
 	END;')
 END;
 GO
+
+/*--SP'S TABLA Nota de Credito--*/
+IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'altaNotaDeCredito' AND schema_id = SCHEMA_ID('ventas'))
+BEGIN
+	EXEC('CREATE PROCEDURE ventas.altaNotaDeCredito
+	@facturaId INT,
+	@tipoNota CHAR(1)
+	AS
+	BEGIN
+	IF @facturaId <= 0
+		BEGIN
+			RAISERROR(''El ID de factura no puede ser menor o igual a cero.'', 16, 1);
+			RETURN;
+		END
+
+	IF ISNULL(@tipoNota, '''') = ''''
+		BEGIN
+			RAISERROR(''El tipo de nota de credito no puede ser vacio.'', 16, 1);
+			RETURN;
+		END
+
+	IF NOT EXISTS (SELECT 1 FROM ventas.Factura WHERE id = @facturaId)
+		BEGIN
+			RAISERROR(''El id de factura no existe'', 16, 1);
+			RETURN;
+		END
+
+	IF IS_MEMBER(''Supervior'') <> 1
+    BEGIN
+        RAISERROR(''No tiene permisos para generar una nota de crédito.'', 16, 1);
+        RETURN;
+    END
+
+	DECLARE @EstadoPago VARCHAR(20);
+	
+    SELECT @EstadoPago = e.descripcion
+    FROM ventas.Factura f
+    JOIN ventas.Estado e ON f.estadoId = e.id
+    WHERE f.id = @FacturaID;
+
+    IF (@EstadoPago IS NULL OR @EstadoPago <> ''pagada'')
+    BEGIN
+        RAISERROR(''La factura no está en estado pagada. No se puede generar la nota de crédito.'', 16, 1);
+        RETURN;
+    END
+
+	DECLARE @precioTotal DECIMAL(10,2);
+	SET @precioTotal = (SELECT precioTotal FROM ventas.Factura WHERE id = @facturaId);
+
+	INSERT INTO ventas.NotaCredito (facturaID, monto,tipoNota)
+    VALUES (@FacturaID, @precioTotal, @TipoNota);
+
+	END;');
+END;
+GO
