@@ -140,6 +140,7 @@ BEGIN
 		FOREIGN KEY (estadoId) REFERENCES ventas.Estado(id),
 		FOREIGN KEY (empleadoID) REFERENCES rrhh.Empleado(legajo),
 		FOREIGN KEY (pagoID) REFERENCES ventas.MedioPago(id),
+		CONSTRAINT CHK_genero_factura CHECK (genero = 'Male' OR genero = 'Female'),
 		CONSTRAINT CHK_nro CHECK (nro LIKE '[0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]')
 	);
 END;
@@ -171,7 +172,7 @@ BEGIN
 		supervisorLegajo INT NOT NULL,
 		fecha DATETIME DEFAULT GETDATE(),
 		monto DECIMAL(10,2) NOT NULL,
-		tipoNota CHAR(1) NOT NULL,  -- 'D' para devolución, 'S' para sustitución
+		tipoNota CHAR(1) NOT NULL,  -- 'D' para devoluciÃ³n, 'S' para sustituciÃ³n
 		observaciones VARCHAR(255) NULL,
 		FOREIGN KEY (facturaID) REFERENCES ventas.Factura(id),
 		FOREIGN KEY (supervisorLegajo) REFERENCES rrhh.Empleado(legajo)
