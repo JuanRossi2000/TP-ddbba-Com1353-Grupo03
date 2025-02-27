@@ -78,7 +78,8 @@ IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'vent
 BEGIN
 	CREATE TABLE ventas.MedioPago(
 		id int PRIMARY KEY identity(1,1),
-		descripcion varchar(21) NOT NULL,
+		descripcionIng varchar(21) NOT NULL,
+		descripcionEsp varchar(21) NOT NULL,
 		habilitado bit DEFAULT 1
 	);
 END;
@@ -98,7 +99,7 @@ IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'prod
 BEGIN
 	CREATE TABLE productos.Producto(	
 		id int PRIMARY KEY identity(1,1),
-		descripcion varchar(75),
+		descripcion varchar(100),
 		precio decimal(7,2),
 		unidadReferencia varchar(7) DEFAULT 'UNIDAD',
 		lineaID int,
@@ -123,16 +124,16 @@ BEGIN
 		id int PRIMARY KEY identity(1,1),
 		nro char(11),
 		tipo char(1) NOT NULL,
+		tipoCliente VARCHAR(20),
+		genero VARCHAR(20),
 		fechaHora smalldatetime NOT NULL,
 		empleadoID int NOT NULL,
-		clienteID int NOT NULL,
 		pagoID int NOT NULL,
 		estadoId int NOT NULL,
 		identificadorPago varchar(25),
 		habilitado BIT DEFAULT 1,
 		FOREIGN KEY (estadoId) REFERENCES ventas.Estado(id),
 		FOREIGN KEY (empleadoID) REFERENCES rrhh.Empleado(legajo),
-		FOREIGN KEY (clienteID) REFERENCES ventas.Cliente(id),
 		FOREIGN KEY (pagoID) REFERENCES ventas.MedioPago(id),
 		CONSTRAINT CHK_nro CHECK (nro LIKE '[0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]')
 	);
@@ -156,4 +157,4 @@ BEGIN
 END;
 GO
 
-create nonclustered index nix_nroFactura on ventas.Factura(nro);
+CREATE NONCLUSTERED INDEX nix_nroFactura on ventas.Factura(nro);
