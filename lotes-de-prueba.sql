@@ -268,3 +268,13 @@ EXEC ventas.altaFactura
 
 EXEC ventas.bajaFactura @id = 1
 --> SELECT * FROM ventas.Factura --> La baja logica se llevo a cabo correctamente.
+
+/*--SP'S TABLA Nota de Credito--*/
+EXEC ventas.altaNotaDeCredito @facturaId = 0, @tipoNota = 'D'
+--> No se puede insertar una nota de credito para una factura con valor 0
+
+EXEC ventas.altaNotaDeCredito @facturaId = -1000, @tipoNota = 'D'
+--> No se puede insertar una nota de credito para una factura con valor Negativo
+
+EXEC ventas.altaNotaDeCredito @facturaId = 1, @tipoNota = ''
+--> No se puede insertar una nota de credito con un tipo vacio
