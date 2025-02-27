@@ -168,14 +168,10 @@ BEGIN
 	CREATE TABLE ventas.NotaCredito (
 		id INT IDENTITY(1,1) PRIMARY KEY,
 		facturaID INT NOT NULL,
-		item INT NOT NULL,
-		supervisorLegajo INT NOT NULL,
 		fecha DATETIME DEFAULT GETDATE(),
 		monto DECIMAL(10,2) NOT NULL,
 		tipoNota CHAR(1) NOT NULL,  -- 'D' para devolución, 'S' para sustitución
-		observaciones VARCHAR(255) NULL,
-		FOREIGN KEY (facturaID) REFERENCES ventas.Factura(id),
-		FOREIGN KEY (supervisorLegajo) REFERENCES rrhh.Empleado(legajo)
+		FOREIGN KEY (facturaID) REFERENCES ventas.Factura(id)
 	);
 END;
 GO
