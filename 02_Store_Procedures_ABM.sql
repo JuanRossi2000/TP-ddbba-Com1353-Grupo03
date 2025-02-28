@@ -335,9 +335,7 @@ CREATE OR ALTER PROCEDURE ventas.actualizaCliente
 GO
 
 
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'bajaCliente' AND schema_id = SCHEMA_ID('ventas'))
-BEGIN
-	EXEC('CREATE PROCEDURE ventas.bajaCliente
+CREATE OR ALTER PROCEDURE ventas.bajaCliente
 	@id INT
 	AS
 	BEGIN
@@ -348,9 +346,8 @@ BEGIN
 				WHERE id = @id
 				RETURN
 			END
-		RAISERROR(''El cliente no existe'', 16, 1)
-	END;')
-END;
+		RAISERROR('El cliente no existe', 16, 1)
+	END;
 GO
 
 /*--SP'S TABLA MEDIOPAGO--*/
