@@ -291,29 +291,24 @@ CREATE OR ALTER PROCEDURE rrhh.bajaEmpleado
 GO
 
 /*--SP'S TABLA CLIENTE--*/
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'altaCliente' AND schema_id = SCHEMA_ID('ventas'))
-BEGIN
-	EXEC('CREATE PROCEDURE ventas.altaCliente
+CREATE OR ALTER PROCEDURE ventas.altaCliente
 		@ciudad VARCHAR(20),
 		@genero CHAR(1),
 		@tipo VARCHAR(10)
 	AS
 	BEGIN
-		IF (@genero NOT IN (''M'', ''F''))
+		IF (@genero NOT IN ('M', 'F'))
 		BEGIN
-			RAISERROR( ''Genero incorrecto.'', 16, 1)
+			RAISERROR( 'Genero incorrecto.', 16, 1)
 			RETURN
 		END
 
 		INSERT INTO ventas.Cliente (ciudad, genero, tipo)
 		VALUES (@ciudad, UPPER(@genero), @tipo)
-	END;')
-END;
+	END;
 GO
 
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'actualizaCliente' AND schema_id = SCHEMA_ID('ventas'))
-BEGIN
-	EXEC('CREATE PROCEDURE ventas.actualizaCliente 
+CREATE OR ALTER PROCEDURE ventas.actualizaCliente 
 		@id int,
 		@ciudad varchar(20) = NULL,
 		@genero char(1) = NULL,
@@ -334,11 +329,11 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			RAISERROR( ''El cliente solicitado no existe.'', 16, 1)
+			RAISERROR( 'El cliente solicitado no existe.', 16, 1)
 		END
-	END;')
-END;
+	END;
 GO
+
 
 IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'bajaCliente' AND schema_id = SCHEMA_ID('ventas'))
 BEGIN
