@@ -754,9 +754,7 @@ CREATE OR ALTER PROCEDURE ventas.bajaFactura
 	END
 GO
 /*--SP'S TABLA DETALLEFACTURA--*/
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'actualizaDetalleFactura' AND schema_id = SCHEMA_ID('ventas'))
-BEGIN
-	EXEC('CREATE PROCEDURE ventas.actualizaDetalleFactura
+CREATE OR ALTER PROCEDURE ventas.actualizaDetalleFactura
 		@facturaID int,
 		@cantidad int = NULL,
 		@precio decimal(10,2) = NULL,
@@ -775,8 +773,7 @@ BEGIN
 		END 
 		ELSE 
 		BEGIN 
-			PRINT ''La factura solicitada no existe.''
+			PRINT 'La factura solicitada no existe.'
 		END
-	END;')
-END;
+	END;
 GO
