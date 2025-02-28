@@ -493,6 +493,7 @@ CREATE OR ALTER PROCEDURE productos.bajaLineaProducto
 	END;
 GO
 
+
 /*--SP'S TABLA PRODUCTO--*/
 IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'altaProducto' AND schema_id = SCHEMA_ID('productos'))
 BEGIN
