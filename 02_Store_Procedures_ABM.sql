@@ -374,9 +374,7 @@ CREATE OR ALTER PROCEDURE ventas.altaMedioPago
 	END;
 GO
 
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'actualizaMedioPago' AND schema_id = SCHEMA_ID('ventas'))
-BEGIN
-	EXEC('CREATE PROCEDURE ventas.actualizaMedioPago
+CREATE OR ALTER PROCEDURE ventas.actualizaMedioPago
 			@id int,
 			@descripcionEsp varchar(21) = NULL,
 			@descripcionIng varchar(21) = NULL,
@@ -387,7 +385,7 @@ BEGIN
 					FROM ventas.MedioPago
 					WHERE id = @id)
 		BEGIN
-			IF (@descripcionEsp <> '''' OR @descripcionIng <> '''')
+			IF (@descripcionEsp <> '' OR @descripcionIng <> '')
 			BEGIN
 				UPDATE ventas.MedioPago
 				SET descripcionEsp = COALESCE(@descripcionEsp, descripcionEsp),
@@ -397,16 +395,16 @@ BEGIN
 			END
 			ELSE
 			BEGIN
-				RAISERROR(''La descripcion no puede estar vacia'', 16, 1)
+				RAISERROR('La descripcion no puede estar vacia', 16, 1)
 			END
 		END
 		ELSE
 		BEGIN
-			PRINT ''El medio de pago solicitado no existe.''
+			PRINT 'El medio de pago solicitado no existe.'
 		END
-	END;')
-END;
+	END;
 GO
+
 
 IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'bajaMedioPago' AND schema_id = SCHEMA_ID('ventas'))
 BEGIN
