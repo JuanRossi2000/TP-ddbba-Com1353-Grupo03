@@ -1,4 +1,5 @@
-﻿USE Aurora_SA
+﻿USE Com1353G03
+	 
 /*--SP'S TABLA SUCURSAL--*/
 --EVALUACION DE NULOS (campos ciudad y ubicación): 
 
