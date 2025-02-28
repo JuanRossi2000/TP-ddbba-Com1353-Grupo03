@@ -1,3 +1,15 @@
+/*
+Parte cumplida: Creacion Bd, esquemas, tablas e indices
+fecha de entrega: 27/02/25
+Comisión: 1353
+Número de grupo: 3
+Materia: Bases de datos Aplicadas
+Nombres y DNI: 
+-Bautista Rios Di Gaeta, 46431397
+-Samuel Gallardo, 45926613
+-Juan Ignacio Rossi, 42115962
+-Joel Fabián Stivala Patiño, 42825990
+*/
 IF NOT EXISTS(	SELECT 1 FROM SYS.DATABASES WHERE name = 'Aurora_SA')
 BEGIN
 	CREATE DATABASE Aurora_SA
