@@ -14,42 +14,47 @@ USE Com1353G03;
 
 GO
 
-Create or alter PROCEDURE ImportarInfoComplementaria
+CREATE OR ALTER PROCEDURE ImportarInfoComplementaria
     @ubicacionArchivo NVARCHAR(400)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-EXEC sp_configure 'Show Advanced Options', 1;
-RECONFIGURE;
-EXEC sp_configure 'Ad Hoc Distributed Queries', 1;
-RECONFIGURE;
+    -- Habilitar opciones necesarias
+    EXEC sp_configure 'Show Advanced Options', 1;
+    RECONFIGURE;
+    EXEC sp_configure 'Ad Hoc Distributed Queries', 1;
+    RECONFIGURE;
+
+    DECLARE @cadena NVARCHAR(MAX);
 
     
     -- Importar hoja "sucursal"
     
-    DECLARE @cadena NVARCHAR(MAX);
-
     SET @cadena = N'
     INSERT INTO rrhh.sucursal(ciudad, ubicacion, direccion, horario, telefono)
-    SELECT 
-         [Ciudad],
-         [Reemplazar por], 
-         [direccion],
-         [Horario],
-         [Telefono]
+    SELECT DISTINCT
+         src.[Ciudad],
+         src.[Reemplazar por],
+         src.[direccion],
+         src.[Horario],
+         src.[Telefono]
     FROM OPENROWSET(
          ''Microsoft.ACE.OLEDB.12.0'',
          ''excel 12.0 Xml;HDR=YES;Database=' + @ubicacionArchivo + ''',
          ''SELECT Ciudad, [Reemplazar por], direccion, Horario, Telefono FROM [sucursal$]''
+    ) AS src
+    WHERE NOT EXISTS (
+         SELECT 1 
+         FROM rrhh.sucursal r
+         WHERE r.ubicacion = src.[Reemplazar por]
+           AND r.ciudad = src.[Ciudad]
     );';
-
     EXEC sp_executesql @cadena;
 
     
     -- Importar hoja "medios de pago"
     
-    -- Se crea una tabla temporal para almacenar la información.
     CREATE TABLE #medioPago(
          español VARCHAR(30),
          ingles VARCHAR(30)
@@ -57,7 +62,7 @@ RECONFIGURE;
 
     SET @cadena = N'
     INSERT INTO #medioPago (ingles, español)
-    SELECT 
+    SELECT DISTINCT
          [F2] AS ingles,
          [F3] AS español
     FROM OPENROWSET(
@@ -65,43 +70,54 @@ RECONFIGURE;
          ''Excel 12.0 Xml;HDR=NO;Database=' + @ubicacionArchivo + ''',
          ''SELECT * FROM [medios de pago$A3:C100]''
     );';
-
     EXEC sp_executesql @cadena;
 
-	--Insertar en la tabla definitiva
-     INSERT INTO ventas.MedioPago(descripcionIng, descripcionEsp)
-     SELECT ingles, español 
-	 FROM #medioPago;
-
- 
-    -- Importar hoja "Clasificacion productos" (Líneas de producto)
-  
-   IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'utilidades' AND TABLE_NAME = 'lineaTemp')
-BEGIN
-   CREATE TABLE utilidades.lineaTemp
-    (
-         producto VARCHAR(50) PRIMARY KEY,
-         linea VARCHAR(10)
+    -- Insertar en la tabla definitiva sin duplicados
+    INSERT INTO ventas.MedioPago(descripcionIng, descripcionEsp)
+    SELECT DISTINCT mp.ingles, mp.español
+    FROM #medioPago mp
+    WHERE NOT EXISTS (
+         SELECT 1 FROM ventas.MedioPago v
+         WHERE v.descripcionIng = mp.ingles
+           AND v.descripcionEsp = mp.español
     );
-END;
+
+    
+    -- Importar hoja "Clasificacion productos" 
+    
+    IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'utilidades' AND TABLE_NAME = 'lineaTemp')
+    BEGIN
+       CREATE TABLE utilidades.lineaTemp
+        (
+             producto VARCHAR(50) PRIMARY KEY,
+             linea VARCHAR(10)
+        );
+    END;
 
     SET @cadena = N'
     INSERT INTO utilidades.LineaTemp(linea, producto)
-    SELECT [Línea de producto], [Producto]
+    SELECT src.[Línea de producto], src.[Producto]
     FROM OPENROWSET(
          ''Microsoft.ACE.OLEDB.12.0'',
          ''Excel 12.0 Xml;HDR=YES;Database=' + @ubicacionArchivo + ''',
-         ''SELECT * FROM [Clasificacion productos$]''
+         ''SELECT [Línea de producto], [Producto] FROM [Clasificacion productos$]''
+    ) AS src
+    WHERE NOT EXISTS (
+         SELECT 1 FROM utilidades.LineaTemp ut
+         WHERE ut.producto = src.[Producto]
     );';
-
     EXEC sp_executesql @cadena;
 
     -- Insertar las líneas de producto (sin duplicados) en la tabla definitiva
     INSERT INTO productos.LineaProducto(nombre)
-    SELECT DISTINCT linea
-    FROM utilidades.lineaTemp;
+    SELECT DISTINCT lt.linea
+    FROM utilidades.lineaTemp lt
+    WHERE NOT EXISTS (
+         SELECT 1 FROM productos.LineaProducto lp
+         WHERE lp.nombre = lt.linea
+    );
 
-
+    
     -- Importar hoja "Empleados"
     
     CREATE TABLE #EmpleadoTemp (
@@ -120,7 +136,7 @@ END;
 
     SET @cadena = N'
     INSERT INTO #EmpleadoTemp(legajo, nombre, apellido, dni, direccion, emailPersonal, emailEmpresa, cuil, cargo, sucursal, turno)
-    SELECT 
+    SELECT DISTINCT
          [Legajo/ID], 
          Nombre, 
          Apellido, 
@@ -137,99 +153,32 @@ END;
          ''excel 12.0 Xml;HDR=YES;Database=' + @ubicacionArchivo + ''',
          ''SELECT [Legajo/ID], Nombre, Apellido, DNI, Direccion, [email personal], [email empresa], CUIL, cargo, sucursal, turno FROM [Empleados$]''
     );';
-
     EXEC sp_executesql @cadena;
 
-    -- Insertar los empleados en la tabla definitiva, relacionando la sucursal mediante JOIN
+    -- Insertar los empleados en la tabla definitiva, relacionando la sucursal mediante JOIN y evitando duplicados por legajo
     INSERT INTO rrhh.Empleado(legajo, nombre, apellido, dni, direccion, emailPersonal, emailEmpresa, cuil, cargo, sucursalId, turno)
-    SELECT 
-         e.legajo,
-         e.nombre,
-         e.apellido,
-         e.dni,
-         e.direccion,
-         e.emailPersonal,
-         e.emailEmpresa,
-         utilidades.GenerarCuil(e.dni),
-         e.cargo,
-         s.id,
-         e.turno
+    SELECT e.legajo,
+           e.nombre,
+           e.apellido,
+           e.dni,
+           e.direccion,
+           e.emailPersonal,
+           e.emailEmpresa,
+           utilidades.GenerarCuil(e.dni),
+           e.cargo,
+           s.id,
+           e.turno
     FROM #EmpleadoTemp e
-    JOIN rrhh.Sucursal s ON s.ubicacion = e.sucursal;
-
-    DROP TABLE #EmpleadoTemp;
-
-    -- Limpieza de la tabla temporal de medios de pago (te vere en el infierno)
-    DROP TABLE #medioPago;
-
-END;
-
-go
-
-CREATE OR ALTER PROCEDURE ventas.importCatalogo
-    @ubicacionArchivo VARCHAR(255)  
-AS
-BEGIN
-    -- Crear tabla temporal para cargar el archivo CSV
-    CREATE TABLE #catalogo
-    (
-        id INT,
-        category VARCHAR(50),
-        [name] VARCHAR(100),
-        price DECIMAL(7,2),
-        reference_price DECIMAL(7,2),
-        reference VARCHAR(7),
-        [date] SMALLDATETIME
+    JOIN rrhh.Sucursal s ON s.ubicacion = e.sucursal
+    WHERE NOT EXISTS (
+         SELECT 1 FROM rrhh.Empleado emp
+         WHERE emp.legajo = e.legajo
     );
 
-    -- Variable con lindo nombre para la cadena dinamica
-    DECLARE @sql NVARCHAR(MAX);
-
-    -- BULK INSERT DINAMICO
-    SET @sql = N'
-        BULK INSERT #catalogo
-        FROM ''' +@ubicacionArchivo+ N'''
-        WITH
-        (
-            FIELDTERMINATOR = '','', -- Especifica el delimitador de campo (coma en un archivo CSV)
-            ROWTERMINATOR = ''0x0A'', -- Especifica el terminador de fila (salto de línea en un archivo CSV)
-            CODEPAGE = ''65001'', -- Especifica la página de códigos del archivo
-            FORMAT = ''CSV'',
-            FIRSTROW = 2 -- Saltamos la primera fila de encabezados
-        );'
-
-    -- Ejecutar la consulta dinámica 
-    EXEC (@sql);
-
-    ;WITH CTE_catalogo AS (
-        SELECT 
-            *,
-            ROW_NUMBER() OVER (
-                PARTITION BY [name]
-                ORDER BY price DESC -- Ordena por precio descendente (para sacar ganancias como buen capitalista)
-            ) AS duplicado
-        FROM #catalogo
-    )
-    -- Insertar los productos en la tabla productos.Producto
-    INSERT INTO productos.Producto (descripcion, precio, unidadReferencia, lineaID)
-    SELECT 
-        utilidades.remplazar(c.[name]), 
-        c.price, 
-        c.reference, 
-        lp.id
-    FROM CTE_catalogo c
-    INNER JOIN utilidades.lineaTemp l ON c.category = l.producto
-    INNER JOIN productos.LineaProducto lp ON lp.nombre = l.linea
-    WHERE c.duplicado = 1;
-
-    PRINT 'Datos cargados exitosamente desde el archivo.';
-
-	drop table #catalogo
-	drop table utilidades.lineaTemp
+    DROP TABLE #EmpleadoTemp;
+    DROP TABLE #medioPago;
 END;
-
-
-go
+GO
 
 
 CREATE OR ALTER PROCEDURE ventas.importProductos
