@@ -580,9 +580,7 @@ CREATE OR ALTER PROCEDURE productos.bajaProducto
 GO
 
 /*--SP'S TABLA FACTURA--*/
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'actualizaFactura' AND schema_id = SCHEMA_ID('ventas'))
-BEGIN
-	EXEC('CREATE PROCEDURE ventas.actualizaFactura 
+CREATE OR ALTER PROCEDURE ventas.actualizaFactura 
 		@nro char(11),
 		@tipo char(1) = NULL,
 		@tipoCliente VARCHAR(20),
@@ -611,15 +609,12 @@ BEGIN
 		END
 		ELSE
 		BEGIN 
-			PRINT ''La factura solicitada no existe.''
+			PRINT 'La factura solicitada no existe.'
 		END
-	END;')
-END;
+	END;
 GO
 
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'altaFactura' AND schema_id = SCHEMA_ID('ventas'))
-BEGIN
-	EXEC('CREATE or alter PROCEDURE ventas.altaFactura
+CREATE OR ALTER PROCEDURE ventas.altaFactura
 		(
 		@productosXML XML,
 		@tipoFactura CHAR(1),
@@ -638,45 +633,45 @@ BEGIN
 		DECLARE @descMedioPago VARCHAR(21);
 		DECLARE @idEstado INT;
 
-		IF @productosXML IS NULL OR @productosXML.exist(''/productos/producto'') = 0
+		IF @productosXML IS NULL OR @productosXML.exist('/productos/producto') = 0
 		BEGIN
-			RAISERROR(''El XML de productos no puede ser nulo o vacío.'', 16, 1);
+			RAISERROR('El XML de productos no puede ser nulo o vacío.', 16, 1);
 			RETURN;
 		END
 
-		IF ISNULL(@tipoFactura, '''') = ''''
+		IF ISNULL(@tipoFactura, '') = ''
 		BEGIN
-			RAISERROR(''El tipo de factura no puede ser vacio.'', 16, 1);
+			RAISERROR('El tipo de factura no puede ser vacio.', 16, 1);
 			RETURN;
 		END
 
 		IF @empleadoId <= 0
 		BEGIN
-			RAISERROR(''El ID del empleado no puede ser menor o igual a cero.'', 16, 1);
+			RAISERROR('El ID del empleado no puede ser menor o igual a cero.', 16, 1);
 			RETURN;
 		END
 
-		IF ISNULL(@tipoCliente, '''') = ''''
+		IF ISNULL(@tipoCliente, '') = ''
 		BEGIN
-			RAISERROR(''El tipo del cliente no puede ser vacio.'', 16, 1);
+			RAISERROR('El tipo del cliente no puede ser vacio.', 16, 1);
 			RETURN;
 		END
 
-		IF ISNULL(@generoCliente, '''') = ''''
+		IF ISNULL(@generoCliente, '') = ''
 		BEGIN
-			RAISERROR(''El genero del cliente no puede ser nulo.'', 16, 1);
+			RAISERROR('El genero del cliente no puede ser nulo.', 16, 1);
 			RETURN;
 		END
 
 		IF @pagoId <= 0
 		BEGIN
-			RAISERROR(''El ID del medio de pago no puede ser menor o igual a 0.'', 16, 1);
+			RAISERROR('El ID del medio de pago no puede ser menor o igual a 0.', 16, 1);
 			RETURN;
 		END
 
-		IF ISNULL(@identPago, '''') = ''''
+		IF ISNULL(@identPago, '') = ''
 		BEGIN
-			RAISERROR(''El identificador de pago no puede ser nulo o vacío.'', 16, 1);
+			RAISERROR('El identificador de pago no puede ser nulo o vacío.', 16, 1);
 			RETURN;
 		END
 
@@ -688,7 +683,7 @@ BEGIN
 		SET @nroFacturaSinFormatear = ABS(CHECKSUM(NEWID())) % 900000000 + 100000000; 
 
 		-- Formatearlo como XXX-XX-XXXX
-		SET @nroFacturaFormateada = STUFF(STUFF(CAST(@nroFacturaSinFormatear as char(9)), 4, 0, ''-''), 7, 0, ''-'');
+		SET @nroFacturaFormateada = STUFF(STUFF(CAST(@nroFacturaSinFormatear as char(9)), 4, 0, '-'), 7, 0, '-');
 	
 	WHILE EXISTS (SELECT 1 FROM Factura WHERE nro = @nroFacturaFormateada)
 		BEGIN
@@ -696,19 +691,19 @@ BEGIN
 			SET @nroFacturaSinFormatear = ABS(CHECKSUM(NEWID())) % 900000000 + 100000000; 
 
 			-- Formatearlo como XXX-XX-XXXX
-			SET @nroFacturaFormateada = STUFF(STUFF(CAST(@nroFacturaSinFormatear as varchar(9)), 4, 0, ''-''), 7, 0, ''-'');
+			SET @nroFacturaFormateada = STUFF(STUFF(CAST(@nroFacturaSinFormatear as varchar(9)), 4, 0, '-'), 7, 0, '-');
 	END
 
 		SET @descMedioPago = (SELECT descripcionEsp FROM ventas.MedioPago WHERE id = @pagoId AND habilitado = 1);
 
 		SET @Idestado =
 			CASE 
-				WHEN @descMedioPago = ''Tarjeta Crédito'' THEN 
-					(SELECT id FROM ventas.Estado WHERE descripcion = ''Pendiente'')
-				WHEN @descMedioPago = ''Efectivo'' THEN 
-					(SELECT id FROM ventas.Estado WHERE descripcion = ''Pagado'')
-				WHEN @descMedioPago = ''Billetera Electronica'' THEN 
-					(SELECT id FROM ventas.Estado WHERE descripcion = ''Pagado'')
+				WHEN @descMedioPago = 'Tarjeta Crédito' THEN 
+					(SELECT id FROM ventas.Estado WHERE descripcion = 'Pendiente')
+				WHEN @descMedioPago = 'Efectivo' THEN 
+					(SELECT id FROM ventas.Estado WHERE descripcion = 'Pagado')
+				WHEN @descMedioPago = 'Billetera Electronica' THEN 
+					(SELECT id FROM ventas.Estado WHERE descripcion = 'Pagado')
 				ELSE 
 					NULL  -- En caso de que no coincida con ninguno de los valores
 		END;
@@ -722,12 +717,12 @@ BEGIN
 		INSERT INTO ventas.DetalleFactura (facturaID, item, cantidad, precio, productoID)
 		SELECT 
 			@idFactura, 
-			x.p.value(''(id/text())[1]'', ''INT''),
-			x.p.value(''(cantComprada/text())[1]'', ''INT''),
+			x.p.value('(id/text())[1]', 'INT'),
+			x.p.value('(cantComprada/text())[1]', 'INT'),
 			p.precio,
-			x.p.value(''(idProducto/text())[1]'', ''INT'')
-		FROM @productosXML.nodes(''/productos/producto'') AS x(p)
-		INNER JOIN productos.Producto p ON x.p.value(''(idProducto/text())[1]'', ''INT'') = p.id;
+			x.p.value('(idProducto/text())[1]', 'INT')
+		FROM @productosXML.nodes('/productos/producto') AS x(p)
+		INNER JOIN productos.Producto p ON x.p.value('(idProducto/text())[1]', 'INT') = p.id;
 
 
 	COMMIT TRANSACTION
@@ -735,16 +730,13 @@ BEGIN
 
 	BEGIN CATCH
 		ROLLBACK TRANSACTION
-		RAISERROR(''Error al insertar los datos. La transacción ha sido revertida.'', 16, 1)
+		RAISERROR('Error al insertar los datos. La transacción ha sido revertida.', 16, 1)
 	END CATCH
 
-	END;')
-END;
+	END;
 GO
 
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'bajaFactura' AND schema_id = SCHEMA_ID('ventas'))
-BEGIN
-	EXEC('CREATE PROCEDURE ventas.bajaFactura
+CREATE OR ALTER PROCEDURE ventas.bajaFactura
 		@id int
 	AS
 	BEGIN
@@ -753,16 +745,14 @@ BEGIN
 			UPDATE ventas.Factura
 			SET habilitado = 0
 			WHERE id = @id
-			PRINT ''La factura se dio de baja correctamente'';
+			PRINT 'La factura se dio de baja correctamente';
 		END;
 		ELSE
 		BEGIN
-			RAISERROR(''La factura solicitada no existe.'', 16, 1);
+			RAISERROR('La factura solicitada no existe.', 16, 1);
 		END;
-	END');
-END;
+	END
 GO
-
 /*--SP'S TABLA DETALLEFACTURA--*/
 IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'actualizaDetalleFactura' AND schema_id = SCHEMA_ID('ventas'))
 BEGIN
