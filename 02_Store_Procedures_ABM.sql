@@ -406,9 +406,7 @@ CREATE OR ALTER PROCEDURE ventas.actualizaMedioPago
 GO
 
 
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'bajaMedioPago' AND schema_id = SCHEMA_ID('ventas'))
-BEGIN
-	EXEC('CREATE PROCEDURE ventas.bajaMedioPago
+CREATE OR ALTER PROCEDURE ventas.bajaMedioPago
 	@id INT
 	AS
 	BEGIN
@@ -417,13 +415,12 @@ BEGIN
 				UPDATE ventas.MedioPago
 				SET habilitado = 0
 				WHERE id = @id
-				PRINT ''El medio de pago se dio de baja correctamente.''
+				PRINT 'El medio de pago se dio de baja correctamente.'
 				RETURN
 			END
 	
-		PRINT ''El medio de pago no existe.''
-	END;')
-END;
+		PRINT 'El medio de pago no existe.'
+	END;
 GO
 
 /*--SP'S TABLA LINEAPRODUCTO--*/
