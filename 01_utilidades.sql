@@ -1,3 +1,15 @@
+/*
+Parte cumplida: Creacion utilidades como funciones y triggers
+fecha de entrega: 27/02/25
+Comisión: 1353
+Número de grupo: 3
+Materia: Bases de datos Aplicadas
+Nombres y DNI: 
+-Bautista Rios Di Gaeta, 46431397
+-Samuel Gallardo, 45926613
+-Juan Ignacio Rossi, 42115962
+-Joel Fabián Stivala Patiño, 42825990
+*/
 use Aurora_SA
 
 --FUNCION QUE UTILIZARA EL PROCEDURE reporteMensualPorTrimestreTurno
@@ -46,7 +58,7 @@ BEGIN
 		-- Convertir el prefijo a una cadena de 2 caracteres
 		DECLARE @prefijoStr CHAR(2) = CAST(@prefijo AS VARCHAR(2))
 
-		-- Calcular el d�gito verificador usando la f�rmula del m�dulo 11
+		-- Calcular el dígito verificador usando la fórmula del módulo 11
 		DECLARE @suma INT =
 			  CAST(SUBSTRING(@prefijoStr, 1, 1) AS INT) * 5 +
 			  CAST(SUBSTRING(@prefijoStr, 2, 1) AS INT) * 4 +
@@ -80,7 +92,7 @@ CREATE FUNCTION utilidades.remplazar (@cadena VARCHAR(MAX))
 RETURNS VARCHAR(MAX)
 AS
 BEGIN
-    RETURN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(@cadena,''1º'',''1�''),''Nº'',''N�''),''º'',''�''),''�'',''''),''Ã'',''''),''単'',''�''),''Ñ'',''�''),''Á'', ''�''),''ñ'', ''�''),''á'', ''�''), ''é'', ''�''), ''ú'', ''�''), ''ó'', ''�''), ''í'', ''�'')
+    RETURN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(@cadena,''1Âº'',''1º''),''NÂº'',''Nº''),''Âº'',''ú''),''Â'',''''),''Ãƒ'',''''),''å˜'',''ñ''),''Ã‘'',''Ñ''),''Ã'', ''Á''),''Ã±'', ''ñ''),''Ã¡'', ''á''), ''Ã©'', ''é''), ''Ãº'', ''ú''), ''Ã³'', ''ó''), ''Ã­'', ''í'')
 END');
 END;
 GO
