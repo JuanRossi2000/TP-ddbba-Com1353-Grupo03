@@ -1,3 +1,5 @@
+USE Com1353G03
+	
 --1)
 CREATE PROCEDURE ventas.reporteMensualPorDia
 	@mes INT,
