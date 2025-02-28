@@ -1,5 +1,5 @@
 /*
-Parte cumplida: Entrega numero 4, generacion de los reportes XML solicitados
+Parte cumplida: Generacion de los reportes XML solicitados
 fecha de entrega: 28/02/25
 Comisión: 1353
 Número de grupo: 3
