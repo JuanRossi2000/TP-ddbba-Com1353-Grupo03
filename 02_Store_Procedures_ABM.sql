@@ -1,3 +1,15 @@
+/*
+Parte cumplida: Creacion de Stored Procedures para el ABM de las tablas
+fecha de entrega: 27/02/25
+Comisi√≥n: 1353
+N√∫mero de grupo: 3
+Materia: Bases de datos Aplicadas
+Nombres y DNI: 
+-Bautista Rios Di Gaeta, 46431397
+-Samuel Gallardo, 45926613
+-Juan Ignacio Rossi, 42115962
+-Joel Fabi√°n Stivala Pati√±o, 42825990
+*/
 /*--SP'S TABLA SUCURSAL--*/
 Use Aurora_SA
 
@@ -16,12 +28,12 @@ BEGIN
 
 		IF ISNULL(@ciudad, '''') = ''''
 		BEGIN
-			RAISERROR(''El campo Ciudad no admite valores vacÌos'', 16, 1)
+			RAISERROR(''El campo Ciudad no admite valores vac√≠os'', 16, 1)
 			SET @esValido = 0
 		END 
 		IF ISNULL(@ubicacion, '''') = '''' 
 		BEGIN
-			RAISERROR(''El campo Ubicacion no admite valores vacÌos'', 16, 1)
+			RAISERROR(''El campo Ubicacion no admite valores vac√≠os'', 16, 1)
 			SET @esValido = 0
 		END 
 
@@ -29,7 +41,7 @@ BEGIN
 		BEGIN
 			INSERT INTO rrhh.Sucursal (ciudad, ubicacion, direccion, horario, telefono)
 			VALUES (@ciudad, @ubicacion, @direccion, @horario, @telefono)
-			PRINT ''La sucursal se creÛ correctamente.''
+			PRINT ''La sucursal se cre√≥ correctamente.''
 		END
 	END')
 END;
@@ -56,12 +68,12 @@ BEGIN
 		BEGIN
 			IF @ciudad = ''''  
 			BEGIN
-				RAISERROR(''El campo Ciudad no admite valores vacÌos'', 16, 1)
+				RAISERROR(''El campo Ciudad no admite valores vac√≠os'', 16, 1)
 				SET @esValido = 0
 			END 
 			IF @ubicacion = ''''
 			BEGIN
-				RAISERROR(''El campo Ubicacion no admite valores vacÌos'', 16, 1)
+				RAISERROR(''El campo Ubicacion no admite valores vac√≠os'', 16, 1)
 				SET @esValido = 0
 			END 
 		
@@ -75,7 +87,7 @@ BEGIN
 				, telefono = COALESCE(@telefono, telefono)
 				, habilitado = COALESCE(@habilitado, habilitado)
 				WHERE id = @id
-				PRINT ''La sucursal se actualizÛ correctamente.''
+				PRINT ''La sucursal se actualiz√≥ correctamente.''
 			END
 		END
 		ELSE
@@ -130,42 +142,42 @@ BEGIN
 		
 		IF ISNULL(@nombre, '''') = '''' 
 		BEGIN
-			RAISERROR(''El campo Nombre no admite valores vacÌos'', 16, 1)
+			RAISERROR(''El campo Nombre no admite valores vac√≠os'', 16, 1)
 			SET @esValido = 0
 		END 
 		IF ISNULL(@apellido, '''') = '''' 
 		BEGIN
-			RAISERROR(''El campo Apellido no admite valores vacÌos'', 16, 1)
+			RAISERROR(''El campo Apellido no admite valores vac√≠os'', 16, 1)
 			SET @esValido = 0
 		END 
 		IF ISNULL(@dni, 0) <= 0
 		BEGIN
-			RAISERROR(''El campo DNI no admite valores vacÌos'', 16, 1)
+			RAISERROR(''El campo DNI no admite valores vac√≠os'', 16, 1)
 			SET @esValido = 0
 		END 
 		IF ISNULL(@emailEmpresa, '''') = '''' 
 		BEGIN
-			RAISERROR(''El campo EmailEmpresa no admite valores vacÌos'', 16, 1)
+			RAISERROR(''El campo EmailEmpresa no admite valores vac√≠os'', 16, 1)
 			SET @esValido = 0
 		END 
 		IF ISNULL(@cuil, 0) <= 0
 		BEGIN
-			RAISERROR(''El campo CUIL no admite valores vacÌos'', 16, 1)
+			RAISERROR(''El campo CUIL no admite valores vac√≠os'', 16, 1)
 			SET @esValido = 0
 		END 
 		IF ISNULL(@cargo, '''') = '''' 
 		BEGIN
-			RAISERROR(''El campo Cargo no admite valores vacÌos'', 16, 1)
+			RAISERROR(''El campo Cargo no admite valores vac√≠os'', 16, 1)
 			SET @esValido = 0
 		END 
 		IF ISNULL(@sucursal, 0) <= 0
 		BEGIN
-			RAISERROR(''El campo Sucursal no admite valores vacÌos'', 16, 1)
+			RAISERROR(''El campo Sucursal no admite valores vac√≠os'', 16, 1)
 			SET @esValido = 0
 		END 
 		IF ISNULL(@turno, '''') = '''' 
 		BEGIN
-			RAISERROR(''El campo Turno no admite valores vacÌos'', 16, 1)
+			RAISERROR(''El campo Turno no admite valores vac√≠os'', 16, 1)
 			SET @esValido = 0
 		END 
 
@@ -222,42 +234,42 @@ BEGIN
 		
 			IF @nombre = '''' 
 			BEGIN
-				RAISERROR(''El campo Nombre no admite valores vacÌos'', 16, 1)
+				RAISERROR(''El campo Nombre no admite valores vac√≠os'', 16, 1)
 				SET @esValido = 0
 			END 
 			IF @apellido = '''' 
 			BEGIN
-				RAISERROR(''El campo Apellido no admite valores vacÌos'', 16, 1)
+				RAISERROR(''El campo Apellido no admite valores vac√≠os'', 16, 1)
 				SET @esValido = 0
 			END 
 			IF @dni <= 0
 			BEGIN
-				RAISERROR(''El campo DNI no admite valores vacÌos'', 16, 1)
+				RAISERROR(''El campo DNI no admite valores vac√≠os'', 16, 1)
 				SET @esValido = 0
 			END 
 			IF @emailEmpresa = '''' 
 			BEGIN
-				RAISERROR(''El campo EmailEmpresa no admite valores vacÌos'', 16, 1)
+				RAISERROR(''El campo EmailEmpresa no admite valores vac√≠os'', 16, 1)
 				SET @esValido = 0
 			END 
 			IF @cuil <= 0
 			BEGIN
-				RAISERROR(''El campo CUIL no admite valores vacÌos'', 16, 1)
+				RAISERROR(''El campo CUIL no admite valores vac√≠os'', 16, 1)
 				SET @esValido = 0
 			END 
 			IF @cargo = '''' 
 			BEGIN
-				RAISERROR(''El campo Cargo no admite valores vacÌos'', 16, 1)
+				RAISERROR(''El campo Cargo no admite valores vac√≠os'', 16, 1)
 				SET @esValido = 0
 			END 
 			IF @sucursalId <= 0 
 			BEGIN
-				RAISERROR(''El campo Sucursal no admite valores vacÌos'', 16, 1)
+				RAISERROR(''El campo Sucursal no admite valores vac√≠os'', 16, 1)
 				SET @esValido = 0
 			END 
 			IF @turno = '''' 
 			BEGIN
-				RAISERROR(''El campo Turno no admite valores vacÌos'', 16, 1)
+				RAISERROR(''El campo Turno no admite valores vac√≠os'', 16, 1)
 				SET @esValido = 0
 			END
 
@@ -511,7 +523,7 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			PRINT ''La lÌnea de producto solicitada no existe''
+			PRINT ''La l√≠nea de producto solicitada no existe''
 		END
 	END;')
 END;
@@ -691,7 +703,7 @@ BEGIN
 
 		IF @productosXML IS NULL OR @productosXML.exist(''/productos/producto'') = 0
 		BEGIN
-			RAISERROR(''El XML de productos no puede ser nulo o vacÌo.'', 16, 1);
+			RAISERROR(''El XML de productos no puede ser nulo o vac√≠o.'', 16, 1);
 			RETURN;
 		END
 
@@ -727,7 +739,7 @@ BEGIN
 
 		IF ISNULL(@identPago, '''') = ''''
 		BEGIN
-			RAISERROR(''El identificador de pago no puede ser nulo o vacÌo.'', 16, 1);
+			RAISERROR(''El identificador de pago no puede ser nulo o vac√≠o.'', 16, 1);
 			RETURN;
 		END
 
@@ -735,7 +747,7 @@ BEGIN
 
 	BEGIN TRY
 
-		-- Generar un n˙mero aleatorio de 9 dÌgitos
+		-- Generar un n√∫mero aleatorio de 9 d√≠gitos
 		SET @nroFacturaSinFormatear = ABS(CHECKSUM(NEWID())) % 900000000 + 100000000; 
 
 		-- Formatearlo como XXX-XX-XXXX
@@ -754,7 +766,7 @@ BEGIN
 
 		SET @Idestado =
 			CASE 
-				WHEN @descMedioPago = ''Tarjeta CrÈdito'' THEN 
+				WHEN @descMedioPago = ''Tarjeta Cr√©dito'' THEN 
 					(SELECT id FROM ventas.Estado WHERE descripcion = ''Pendiente'')
 				WHEN @descMedioPago = ''Efectivo'' THEN 
 					(SELECT id FROM ventas.Estado WHERE descripcion = ''Pagado'')
@@ -786,7 +798,7 @@ BEGIN
 
 	BEGIN CATCH
 		ROLLBACK TRANSACTION
-		RAISERROR(''Error al insertar los datos. La transacciÛn ha sido revertida.'', 16, 1)
+		RAISERROR(''Error al insertar los datos. La transacci√≥n ha sido revertida.'', 16, 1)
 	END CATCH
 
 	END;')
@@ -870,7 +882,7 @@ BEGIN
 
 	IF IS_MEMBER(''Supervior'') <> 1
     BEGIN
-        RAISERROR(''No tiene permisos para generar una nota de crÈdito.'', 16, 1);
+        RAISERROR(''No tiene permisos para generar una nota de cr√©dito.'', 16, 1);
         RETURN;
     END
 
@@ -883,7 +895,7 @@ BEGIN
 
     IF (@EstadoPago IS NULL OR @EstadoPago <> ''pagada'')
     BEGIN
-        RAISERROR(''La factura no est· en estado pagada. No se puede generar la nota de crÈdito.'', 16, 1);
+        RAISERROR(''La factura no est√° en estado pagada. No se puede generar la nota de cr√©dito.'', 16, 1);
         RETURN;
     END
 
