@@ -1,3 +1,5 @@
+USE Com1353G03
+
 Create or alter PROCEDURE ImportarInfoComplementaria
     @ubicacionArchivo NVARCHAR(400)
 AS
