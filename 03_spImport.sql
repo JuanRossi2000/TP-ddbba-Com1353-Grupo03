@@ -10,7 +10,9 @@ Nombres y DNI:
 -Juan Ignacio Rossi, 42115962
 -Joel Fabián Stivala Patiño, 42825990
 */
-USE Com1353G03
+USE Com1353G03;
+
+GO
 
 Create or alter PROCEDURE ImportarInfoComplementaria
     @ubicacionArchivo NVARCHAR(400)
