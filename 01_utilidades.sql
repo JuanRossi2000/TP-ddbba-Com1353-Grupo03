@@ -10,7 +10,7 @@ Nombres y DNI:
 -Juan Ignacio Rossi, 42115962
 -Joel Fabián Stivala Patiño, 42825990
 */
-use Aurora_SA
+use Com1353G03
 
 --FUNCION QUE UTILIZARA EL PROCEDURE reporteMensualPorTrimestreTurno
 IF NOT EXISTS(SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('utilidades.getTrimestre') AND type = 'FN')

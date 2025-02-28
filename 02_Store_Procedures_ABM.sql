@@ -10,8 +10,9 @@ Nombres y DNI:
 -Juan Ignacio Rossi, 42115962
 -Joel Fabián Stivala Patiño, 42825990
 */
+
 /*--SP'S TABLA SUCURSAL--*/
-Use Aurora_SA
+Use Com1353G03
 
 IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'altaSucursal' AND schema_id = SCHEMA_ID('rrhh'))
 BEGIN 
