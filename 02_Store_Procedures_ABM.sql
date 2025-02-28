@@ -99,9 +99,7 @@ CREATE OR ALTER PROCEDURE rrhh.bajaSucursal
 GO
 
 /*--SP'S TABLA EMPLEADO--*/
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'altaEmpleado' AND schema_id = SCHEMA_ID('rrhh'))
-BEGIN
-	EXEC('CREATE PROCEDURE rrhh.altaEmpleado
+CREATE OR ALTER PROCEDURE rrhh.altaEmpleado
 		@legajo int = NULL,
 		@nombre VARCHAR(50),
 		@apellido VARCHAR(50),
@@ -119,44 +117,44 @@ BEGIN
 		DECLARE @newLegajo INT
 		SET @esValido = 1
 		
-		IF ISNULL(@nombre, '''') = '''' 
+		IF ISNULL(@nombre, '') = ''
 		BEGIN
-			RAISERROR(''El campo Nombre no admite valores vacíos'', 16, 1)
+			RAISERROR('El campo Nombre no admite valores vacíos', 16, 1)
 			SET @esValido = 0
 		END 
-		IF ISNULL(@apellido, '''') = '''' 
+		IF ISNULL(@apellido, '') = ''
 		BEGIN
-			RAISERROR(''El campo Apellido no admite valores vacíos'', 16, 1)
+			RAISERROR('El campo Apellido no admite valores vacíos', 16, 1)
 			SET @esValido = 0
 		END 
 		IF ISNULL(@dni, 0) <= 0
 		BEGIN
-			RAISERROR(''El campo DNI no admite valores vacíos'', 16, 1)
+			RAISERROR('El campo DNI no admite valores vacíos', 16, 1)
 			SET @esValido = 0
 		END 
-		IF ISNULL(@emailEmpresa, '''') = '''' 
+		IF ISNULL(@emailEmpresa, '') = '' 
 		BEGIN
-			RAISERROR(''El campo EmailEmpresa no admite valores vacíos'', 16, 1)
+			RAISERROR('El campo EmailEmpresa no admite valores vacíos', 16, 1)
 			SET @esValido = 0
 		END 
 		IF ISNULL(@cuil, 0) <= 0
 		BEGIN
-			RAISERROR(''El campo CUIL no admite valores vacíos'', 16, 1)
+			RAISERROR('El campo CUIL no admite valores vacíos', 16, 1)
 			SET @esValido = 0
 		END 
-		IF ISNULL(@cargo, '''') = '''' 
+		IF ISNULL(@cargo, '') = ''
 		BEGIN
-			RAISERROR(''El campo Cargo no admite valores vacíos'', 16, 1)
+			RAISERROR('El campo Cargo no admite valores vacíos', 16, 1)
 			SET @esValido = 0
 		END 
 		IF ISNULL(@sucursal, 0) <= 0
 		BEGIN
-			RAISERROR(''El campo Sucursal no admite valores vacíos'', 16, 1)
+			RAISERROR('El campo Sucursal no admite valores vacíos', 16, 1)
 			SET @esValido = 0
 		END 
-		IF ISNULL(@turno, '''') = '''' 
+		IF ISNULL(@turno, '') = ''
 		BEGIN
-			RAISERROR(''El campo Turno no admite valores vacíos'', 16, 1)
+			RAISERROR('El campo Turno no admite valores vacíos', 16, 1)
 			SET @esValido = 0
 		END 
 
@@ -172,13 +170,13 @@ BEGIN
 
 		IF EXISTS (SELECT 1 FROM rrhh.Empleado WHERE dni = @dni)
 		BEGIN 
-			RAISERROR(''Error: El empleado ya esta dado de alta.'', 16, 1)
+			RAISERROR('Error: El empleado ya esta dado de alta.', 16, 1)
 			SET @esValido = 0
 		END
 
 		IF EXISTS (SELECT 1 FROM rrhh.Empleado WHERE legajo = @newLegajo)
 		BEGIN 
-			RAISERROR(''El campo Legajo no admite valores duplicados'', 16, 1)
+			RAISERROR('El campo Legajo no admite valores duplicados', 16, 1)
 			SET @esValido = 0
 		END
 
@@ -187,8 +185,7 @@ BEGIN
 			INSERT INTO rrhh.Empleado (legajo, nombre, apellido, dni, direccion, emailPersonal, emailEmpresa, cuil, cargo, sucursalId, turno)
 			VALUES (@newLegajo, @nombre, @apellido, @dni, @direccion, @emailPersonal, @emailEmpresa, @cuil, @cargo, @sucursal, @turno);
 		END
-	END;')
-END;
+	END;
 GO
 
 IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'actualizaEmpleado' AND schema_id = SCHEMA_ID('rrhh'))
