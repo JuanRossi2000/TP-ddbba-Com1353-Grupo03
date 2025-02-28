@@ -351,30 +351,27 @@ CREATE OR ALTER PROCEDURE ventas.bajaCliente
 GO
 
 /*--SP'S TABLA MEDIOPAGO--*/
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'altaMedioPago' AND schema_id = SCHEMA_ID('ventas'))
-BEGIN
-	EXEC('CREATE PROCEDURE ventas.altaMedioPago
+CREATE OR ALTER PROCEDURE ventas.altaMedioPago
 	@descripcionEsp VARCHAR(21),
 	@descripcionIng VARCHAR(21)
 	AS
 	BEGIN
 		IF EXISTS (SELECT 1 FROM ventas.MedioPago WHERE descripcionEsp = @descripcionEsp or descripcionIng = @descripcionIng)
 			BEGIN
-				PRINT ''Error: El medio de pago ya existe.''
+				PRINT 'Error: El medio de pago ya existe.'
 				RETURN
 			END
-		IF @descripcionEsp <> '''' AND @descripcionIng <> ''''
+		IF @descripcionEsp <> '' AND @descripcionIng <> ''
 		BEGIN
 			INSERT INTO ventas.MedioPago (descripcionEsp,descripcionIng)
 			VALUES (@descripcionEsp,@descripcionIng)
-			PRINT ''El medio de pago se dio de alta.''
+			PRINT 'El medio de pago se dio de alta.'
 		END
 		ELSE
 		BEGIN
-			RAISERROR(''La descripcion no puede estar vacia'', 16, 1)
+			RAISERROR('La descripcion no puede estar vacia', 16, 1)
 		END
-	END;')
-END;
+	END;
 GO
 
 IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'actualizaMedioPago' AND schema_id = SCHEMA_ID('ventas'))
