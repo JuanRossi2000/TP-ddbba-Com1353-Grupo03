@@ -13,6 +13,7 @@ Nombres y DNI:
 
 USE Com1353G03
 
+GO
 --1) SE AÑADEN LOS CAMPOS CIFRADOS EN FORMATO VARBINARY(256)
 ALTER TABLE rrhh.Empleado
 ADD apellido_Cifrado VARBINARY(256),
@@ -21,7 +22,7 @@ direccion_Cifrado VARBINARY(256),
 email_Cifrado VARBINARY(256),
 cuil_Cifrado VARBINARY(256);
 
-
+GO
 --2) SE CREA UNA FRASE DE ENCRIPTACION Y SE PROCEDE A ENCRIPTAR LOS DATOS EN LOS CAMPOS CREADOS
 DECLARE @Frase NVARCHAR(128);
 SET @Frase = 'AL4GR4ND3L3PUS3CUC4';
@@ -34,7 +35,6 @@ direccion_Cifrado = EncryptByPassPhrase(@Frase, direccion),
 email_Cifrado = EncryptByPassPhrase(@Frase, emailPersonal),
 cuil_Cifrado = EncryptByPassPhrase(@Frase, CONVERT(VARCHAR(MAX), cuil));
 
-
 --4) PARA VISUALIZAR LOS DATOS ENCRIPTADOS, SE UTILIZA LA FUNCION DECRYPTBYPASSPHRASE
 SELECT CONVERT(VARCHAR(MAX), DECRYPTBYPASSPHRASE(@Frase, apellido_Cifrado))
 	, CONVERT(VARCHAR(MAX), DECRYPTBYPASSPHRASE(@Frase, dni_cifrado))
@@ -43,6 +43,7 @@ SELECT CONVERT(VARCHAR(MAX), DECRYPTBYPASSPHRASE(@Frase, apellido_Cifrado))
 	, CONVERT(VARCHAR(MAX), DECRYPTBYPASSPHRASE(@Frase, cuil_cifrado))
 FROM rrhh.Empleado
 
+GO
 --5) Generacion de Roles para usuarios
 CREATE LOGIN PersonaGenerica WITH PASSWORD = '26/06/11Belgrano!';
 CREATE USER UsuarioVentas FOR LOGIN PersonaGenerica;
@@ -53,4 +54,5 @@ DENY SELECT, INSERT ON ventas.NotaCredito TO UsuarioVentas;
 CREATE LOGIN SupervisorGenerico WITH PASSWORD = '09/12/18Madrid!';
 CREATE USER UsuarioSupervisor FOR LOGIN SupervisorGenerico;
 
-GRANT SELECT, INSERT, DELETE ON SCHEMA::ventas TO SupervisorGenerico;
+GRANT SELECT, INSERT, DELETE ON SCHEMA::ventas TO UsuarioSupervisor;
+
