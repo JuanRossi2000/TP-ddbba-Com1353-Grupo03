@@ -1,6 +1,6 @@
 /*--SP'S TABLA SUCURSAL--*/
 Use Com1353G03
-
+GO
 CREATE OR ALTER PROCEDURE rrhh.altaSucursal
 		@ciudad VARCHAR(20),
 		@ubicacion VARCHAR(20),
