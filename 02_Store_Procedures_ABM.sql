@@ -424,36 +424,31 @@ CREATE OR ALTER PROCEDURE ventas.bajaMedioPago
 GO
 
 /*--SP'S TABLA LINEAPRODUCTO--*/
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'altaLineaProducto' AND schema_id = SCHEMA_ID('productos'))
-BEGIN
-	EXEC('CREATE PROCEDURE productos.altaLineaProducto
+CREATE OR ALTER PROCEDURE productos.altaLineaProducto
 	@nombre VARCHAR(20)
 	AS
 	BEGIN
 		IF EXISTS (SELECT 1 FROM productos.LineaProducto WHERE nombre = @nombre)
 			BEGIN
-				PRINT ''La linea del producto ya existe.''
+				PRINT 'La linea del producto ya existe.'
 				RETURN
 			END
 
-		IF @nombre = ''''
+		IF @nombre = ''
 		BEGIN
-			RAISERROR(''El campo Nombre no puede estar vacio'', 16, 1)
+			RAISERROR('El campo Nombre no puede estar vacio', 16, 1)
 			RETURN
 		END
 
 		INSERT INTO productos.LineaProducto (nombre)
 		VALUES (@nombre)
 
-		PRINT ''La linea del prodcuto se dio de alta.''
+		PRINT 'La linea del prodcuto se dio de alta.'
 
-	END;')
-END;
+	END;
 GO
 
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'actualizaLineaProducto' AND schema_id = SCHEMA_ID('productos'))
-BEGIN
-	EXEC('CREATE PROCEDURE productos.actualizaLineaProducto
+CREATE OR ALTER PROCEDURE productos.actualizaLineaProducto
 		@id int,
 		@nombre varchar(20) = NULL,
 		@habilitado BIT = NULL
@@ -463,7 +458,7 @@ BEGIN
 					FROM productos.LineaProducto
 					WHERE id = @id)
 		BEGIN
-			IF @nombre <> '''' OR @nombre IS NULL
+			IF @nombre <> '' OR @nombre IS NULL
 			BEGIN
 				UPDATE productos.LineaProducto 
 				SET nombre = COALESCE(@nombre, nombre)
@@ -472,20 +467,17 @@ BEGIN
 			END
 			ELSE 
 			BEGIN
-				RAISERROR(''El campo nombre no puede ser vacio.'', 16, 1)
+				RAISERROR('El campo nombre no puede ser vacio.', 16, 1)
 			END
 		END
 		ELSE
 		BEGIN
-			PRINT ''La línea de producto solicitada no existe''
+			PRINT 'La línea de producto solicitada no existe'
 		END
-	END;')
-END;
+	END;
 GO
 
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'bajaLineaProducto' AND schema_id = SCHEMA_ID('productos'))
-BEGIN
-	EXEC('CREATE PROCEDURE productos.bajaLineaProducto
+CREATE OR ALTER PROCEDURE productos.bajaLineaProducto
 	@id INT
 	AS
 	BEGIN
@@ -494,12 +486,11 @@ BEGIN
 				UPDATE productos.LineaProducto
 				SET habilitado = 0
 				WHERE id = @id
-				PRINT ''La linea del producto se dio de baja correctamente''
+				PRINT 'La linea del producto se dio de baja correctamente'
 				RETURN
 			END
-		PRINT ''La linea del producto no existe''
-	END;')
-END;
+		PRINT 'La linea del producto no existe'
+	END;
 GO
 
 /*--SP'S TABLA PRODUCTO--*/
