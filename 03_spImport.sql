@@ -498,7 +498,7 @@ BEGIN
            v.empleado,
            m.id,
            CASE 
-                WHEN m.descripcionIng = 'Credit card' THEN 1
+                WHEN m.descripcionIng = 'Credit card' THEN (ABS(CHECKSUM(NEWID())) % 2) + 1
                 WHEN m.descripcionIng = 'Cash' THEN 2 
                 ELSE 2
            END AS estadoID,
