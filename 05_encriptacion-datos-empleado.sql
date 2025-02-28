@@ -43,3 +43,14 @@ SELECT CONVERT(VARCHAR(MAX), DECRYPTBYPASSPHRASE(@Frase, apellido_Cifrado))
 	, CONVERT(VARCHAR(MAX), DECRYPTBYPASSPHRASE(@Frase, cuil_cifrado))
 FROM rrhh.Empleado
 
+--5) Generacion de Roles para usuarios
+CREATE LOGIN PersonaGenerica WITH PASSWORD = '26/06/11Belgrano!';
+CREATE USER UsuarioVentas FOR LOGIN PersonaGenerica;
+
+GRANT SELECT, INSERT ON SCHEMA::ventas TO UsuarioVentas;
+DENY SELECT, INSERT ON ventas.NotaCredito TO UsuarioVentas;
+
+CREATE LOGIN SupervisorGenerico WITH PASSWORD = '09/12/18Madrid!';
+CREATE USER UsuarioSupervisor FOR LOGIN SupervisorGenerico;
+
+GRANT SELECT, INSERT, DELETE ON SCHEMA::ventas TO SupervisorGenerico;
