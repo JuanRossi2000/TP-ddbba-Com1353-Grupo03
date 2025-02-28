@@ -12,10 +12,11 @@ Nombres y DNI:
 */
 use Com1353G03
 
+GO
+
 --FUNCION QUE UTILIZARA EL PROCEDURE reporteMensualPorTrimestreTurno
-IF NOT EXISTS(SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('utilidades.getTrimestre') AND type = 'FN')
-BEGIN
-	EXEC('CREATE FUNCTION utilidades.getTrimestre
+
+	CREATE or ALTER FUNCTION utilidades.getTrimestre
 				(@mes INT)
 			RETURNS INT
 			AS
@@ -31,14 +32,12 @@ BEGIN
 				END;
 
 				RETURN @trimestre
-			END;');
-END;
+			END;
 GO
 
 --FUNCION PARA GENERAR CUIL DE EMPLEADOS
-IF NOT EXISTS(SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('utilidades.GenerarCuil') AND type = 'FN')
-BEGIN
-	EXEC('CREATE FUNCTION utilidades.GenerarCuil(@dni INT)
+
+CREATE or ALTER FUNCTION utilidades.GenerarCuil(@dni INT)
 	RETURNS VARCHAR(11)
 	AS
 	BEGIN
@@ -78,10 +77,9 @@ BEGIN
 		IF @digito = 10 SET @digito = 9;
 
 		RETURN @prefijoStr + @dniStr + CAST(@digito AS CHAR(1));
-	END;');
-END;
-GO
+	END;
 
+GO
 -----------------------------------------------------------------------------------------------------------------------
 -- Esta funcion fue el resultado de sudor y sangre, no estamos orgullosos pero tampoco arrepentidos, gracias por leer
 -----------------------------------------------------------------------------------------------------------------------
