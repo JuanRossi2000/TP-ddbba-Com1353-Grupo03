@@ -83,21 +83,16 @@ GO
 -----------------------------------------------------------------------------------------------------------------------
 -- Esta funcion fue el resultado de sudor y sangre, no estamos orgullosos pero tampoco arrepentidos, gracias por leer
 -----------------------------------------------------------------------------------------------------------------------
-IF NOT EXISTS(SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('utilidades.remplazar') AND type = 'FN')
-BEGIN
-	EXEC('
-CREATE FUNCTION utilidades.remplazar (@cadena VARCHAR(MAX))
-RETURNS VARCHAR(MAX)
-AS
-BEGIN
-    RETURN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(@cadena,''1Âº'',''1º''),''NÂº'',''Nº''),''Âº'',''ú''),''Â'',''''),''Ãƒ'',''''),''å˜'',''ñ''),''Ã‘'',''Ñ''),''Ã'', ''Á''),''Ã±'', ''ñ''),''Ã¡'', ''á''), ''Ã©'', ''é''), ''Ãº'', ''ú''), ''Ã³'', ''ó''), ''Ã­'', ''í'')
-END');
-END;
+	CREATE or ALTER FUNCTION utilidades.remplazar (@cadena VARCHAR(MAX))
+	RETURNS VARCHAR(MAX)
+	AS
+	BEGIN
+		RETURN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(@cadena,'1Âº','1º'),'NÂº','Nº'),'Âº','ú'),'Â',''),'Ãƒ',''),'å˜','ñ'),'Ã‘','Ñ'),'Ã', 'Á'),'Ã±', 'ñ'),'Ã¡', 'á'), 'Ã©', 'é'), 'Ãº', 'ú'), 'Ã³', 'ó'), 'Ã­', 'í')
+	END
+
 GO
 
-IF NOT EXISTS(SELECT 1 FROM sys.triggers WHERE name = 'actualizaPrecioTotal' AND parent_class_desc = 'OBJECT_OR_COLUMN')
-BEGIN
-	EXEC('CREATE OR ALTER TRIGGER ventas.actualizaPrecioTotal ON ventas.DetalleFactura AFTER INSERT, UPDATE
+	CREATE OR ALTER TRIGGER ventas.actualizaPrecioTotal ON ventas.DetalleFactura AFTER INSERT, UPDATE
 	AS
 	BEGIN
 		UPDATE ventas.Factura
@@ -107,6 +102,6 @@ BEGIN
 			WHERE df.facturaID = Factura.id
 		)
 		WHERE Factura.id IN (SELECT DISTINCT facturaID FROM inserted);
-	END');
-END;
-GO
+	END
+
+
