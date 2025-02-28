@@ -32,9 +32,7 @@ CREATE OR ALTER PROCEDURE rrhh.altaSucursal
 	END;
 GO
 
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'actualizaSucursal' AND schema_id = SCHEMA_ID('rrhh'))
-BEGIN 
-	EXEC('CREATE PROCEDURE rrhh.actualizaSucursal
+CREATE OR ALTER PROCEDURE rrhh.actualizaSucursal
 		@id int,
 		@ciudad varchar(20) = NULL,
 		@ubicacion varchar(20) = NULL,
@@ -51,14 +49,14 @@ BEGIN
 					FROM rrhh.Sucursal
 					WHERE id = @id)
 		BEGIN
-			IF @ciudad = ''''  
+			IF @ciudad = '' 
 			BEGIN
-				RAISERROR(''El campo Ciudad no admite valores vacíos'', 16, 1)
+				RAISERROR('El campo Ciudad no admite valores vacíos', 16, 1)
 				SET @esValido = 0
 			END 
-			IF @ubicacion = ''''
+			IF @ubicacion = ''
 			BEGIN
-				RAISERROR(''El campo Ubicacion no admite valores vacíos'', 16, 1)
+				RAISERROR('El campo Ubicacion no admite valores vacíos', 16, 1)
 				SET @esValido = 0
 			END 
 		
@@ -72,15 +70,14 @@ BEGIN
 				, telefono = COALESCE(@telefono, telefono)
 				, habilitado = COALESCE(@habilitado, habilitado)
 				WHERE id = @id
-				PRINT ''La sucursal se actualizó correctamente.''
+				PRINT 'La sucursal se actualizó correctamente.'
 			END
 		END
 		ELSE
 		BEGIN
-			RAISERROR(''La sucursal solicitada no existe.'', 16, 1)
+			RAISERROR('La sucursal solicitada no existe.', 16, 1)
 		END
-	END;')
-END;
+	END;
 GO
 
 IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'bajaSucursal' AND schema_id = SCHEMA_ID('rrhh'))
