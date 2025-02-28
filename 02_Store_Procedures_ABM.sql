@@ -188,9 +188,7 @@ CREATE OR ALTER PROCEDURE rrhh.altaEmpleado
 	END;
 GO
 
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'actualizaEmpleado' AND schema_id = SCHEMA_ID('rrhh'))
-BEGIN
-	EXEC('CREATE PROCEDURE rrhh.actualizaEmpleado
+CREATE OR ALTER PROCEDURE rrhh.actualizaEmpleado
 			@legajo int,	
 			@nombre varchar(50) = NULL,	
 			@apellido varchar(50) = NULL,
@@ -208,44 +206,44 @@ BEGIN
 			DECLARE @esValido BIT
 			SET @esValido = 1
 		
-			IF @nombre = '''' 
+			IF @nombre = ''
 			BEGIN
-				RAISERROR(''El campo Nombre no admite valores vacíos'', 16, 1)
+				RAISERROR('El campo Nombre no admite valores vacíos', 16, 1)
 				SET @esValido = 0
 			END 
-			IF @apellido = '''' 
+			IF @apellido = ''
 			BEGIN
-				RAISERROR(''El campo Apellido no admite valores vacíos'', 16, 1)
+				RAISERROR('El campo Apellido no admite valores vacíos', 16, 1)
 				SET @esValido = 0
 			END 
 			IF @dni <= 0
 			BEGIN
-				RAISERROR(''El campo DNI no admite valores vacíos'', 16, 1)
+				RAISERROR('El campo DNI no admite valores vacíos', 16, 1)
 				SET @esValido = 0
 			END 
-			IF @emailEmpresa = '''' 
+			IF @emailEmpresa = ''
 			BEGIN
-				RAISERROR(''El campo EmailEmpresa no admite valores vacíos'', 16, 1)
+				RAISERROR('El campo EmailEmpresa no admite valores vacíos', 16, 1)
 				SET @esValido = 0
 			END 
 			IF @cuil <= 0
 			BEGIN
-				RAISERROR(''El campo CUIL no admite valores vacíos'', 16, 1)
+				RAISERROR('El campo CUIL no admite valores vacíos', 16, 1)
 				SET @esValido = 0
 			END 
-			IF @cargo = '''' 
+			IF @cargo = '' 
 			BEGIN
-				RAISERROR(''El campo Cargo no admite valores vacíos'', 16, 1)
+				RAISERROR('El campo Cargo no admite valores vacíos', 16, 1)
 				SET @esValido = 0
 			END 
 			IF @sucursalId <= 0 
 			BEGIN
-				RAISERROR(''El campo Sucursal no admite valores vacíos'', 16, 1)
+				RAISERROR('El campo Sucursal no admite valores vacíos', 16, 1)
 				SET @esValido = 0
 			END 
-			IF @turno = '''' 
+			IF @turno = ''
 			BEGIN
-				RAISERROR(''El campo Turno no admite valores vacíos'', 16, 1)
+				RAISERROR('El campo Turno no admite valores vacíos', 16, 1)
 				SET @esValido = 0
 			END
 
@@ -269,10 +267,9 @@ BEGIN
 			END
 			ELSE
 			BEGIN
-				RAISERROR(''El empleado solicitado no existe.'', 16, 1)
+				RAISERROR('El empleado solicitado no existe.', 16, 1)
 			END
-	END;')
-END; 
+	END;
 GO
 
 IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'bajaEmpleado' AND schema_id = SCHEMA_ID('rrhh'))
