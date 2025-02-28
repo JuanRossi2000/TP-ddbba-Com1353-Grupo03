@@ -495,43 +495,38 @@ GO
 
 
 /*--SP'S TABLA PRODUCTO--*/
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'altaProducto' AND schema_id = SCHEMA_ID('productos'))
-BEGIN
-	exec('CREATE PROCEDURE productos.altaProducto
+CREATE OR ALTER PROCEDURE productos.altaProducto
 	@descripcion VARCHAR(75),
 	@precio DECIMAL(7,2),
-	@unidadadReferencia VARCHAR(7) = ''UNIDAD'',
+	@unidadadReferencia VARCHAR(7) = 'UNIDAD',
 	@idLineaProd INT
 	AS
 	BEGIN
 		IF EXISTS (SELECT 1 FROM productos.Producto WHERE descripcion = @descripcion)
 			BEGIN
-				PRINT ''Error: El producto ya esta dado de alta.''
+				PRINT 'Error: El producto ya esta dado de alta.'
 				RETURN
 			END
 
 		IF NOT EXISTS (SELECT 1 FROM productos.LineaProducto WHERE id = @idLineaProd)
 			BEGIN
-				PRINT ''Error: La linea del producto es incorrecta.''
+				PRINT 'Error: La linea del producto es incorrecta.'
 				RETURN
 			END
-		IF ISNULL(@descripcion, '''') = ''''
+		IF ISNULL(@descripcion, '') = ''
 		BEGIN
-			RAISERROR(''La descripcion no puede estar vacia.'', 16, 1)
+			RAISERROR('La descripcion no puede estar vacia.', 16, 1)
 			RETURN
 		END
 		INSERT INTO productos.Producto (descripcion, precio, unidadReferencia, lineaID)
 		VALUES (@descripcion, @precio, @unidadadReferencia, @idLineaProd)
 
-		PRINT ''El producto se dio de alta.''
+		PRINT 'El producto se dio de alta.'
 
-	END;')
-END;
+	END;
 GO
 
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'actualizaProducto' AND schema_id = SCHEMA_ID('productos'))
-BEGIN
-	EXEC('CREATE PROCEDURE productos.actualizaProducto	
+CREATE OR ALTER PROCEDURE productos.actualizaProducto	
 		@id int,
 		@descripcion varchar(75) = NULL,
 		@precio decimal(7,2) = NULL,
@@ -544,7 +539,7 @@ BEGIN
 					FROM productos.Producto
 					WHERE id = @id)
 		BEGIN
-			IF @descripcion <> '''' OR @descripcion IS NULL
+			IF @descripcion <> '' OR @descripcion IS NULL
 			BEGIN
 				UPDATE productos.Producto
 				SET descripcion = COALESCE(@descripcion, descripcion) 
@@ -556,20 +551,17 @@ BEGIN
 			END
 			ELSE
 			BEGIN
-				RAISERROR(''La descripcion no puede estar vacia.'', 16, 1)
+				RAISERROR('La descripcion no puede estar vacia.', 16, 1)
 			END
 		END
 		ELSE
 		BEGIN 
-			PRINT ''El producto solicitado no existe''
+			PRINT 'El producto solicitado no existe'
 		END
-	END;') 
-END;
+	END;
 GO
 
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'bajaProducto' AND schema_id = SCHEMA_ID('productos'))
-BEGIN
-	EXEC('CREATE PROCEDURE productos.bajaProducto
+CREATE OR ALTER PROCEDURE productos.bajaProducto
 	@id INT
 	AS
 	BEGIN
@@ -578,14 +570,13 @@ BEGIN
 				UPDATE productos.Producto
 				SET habilitado = 0
 				WHERE id = @id
-				PRINT ''El producto se dio de baja correctamente.''
+				PRINT 'El producto se dio de baja correctamente.'
 				RETURN
 			END
 
-		PRINT ''El producto no existe.''
+		PRINT 'El producto no existe.'
 
-	END;')
-END;
+	END;
 GO
 
 /*--SP'S TABLA FACTURA--*/
