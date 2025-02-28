@@ -1,6 +1,19 @@
+/*
+Parte cumplida: Encriptacion y generacion de roles
+fecha de entrega: 28/02/25
+Comisión: 1353
+Número de grupo: 3
+Materia: Bases de datos Aplicadas
+Nombres y DNI: 
+-Bautista Rios Di Gaeta, 46431397
+-Samuel Gallardo, 45926613
+-Juan Ignacio Rossi, 42115962
+-Joel Fabián Stivala Patiño, 42825990
+*/
+
 USE Com1353G03
 
---1) SE A�ADEN LOS CAMPOS CIFRADOS EN FORMATO VARBINARY(256)
+--1) SE AÑADEN LOS CAMPOS CIFRADOS EN FORMATO VARBINARY(256)
 ALTER TABLE rrhh.Empleado
 ADD apellido_Cifrado VARBINARY(256),
 dni_Cifrado VARBINARY(256),
