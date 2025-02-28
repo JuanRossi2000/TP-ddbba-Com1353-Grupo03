@@ -272,9 +272,7 @@ CREATE OR ALTER PROCEDURE rrhh.actualizaEmpleado
 	END;
 GO
 
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'bajaEmpleado' AND schema_id = SCHEMA_ID('rrhh'))
-BEGIN
-	EXEC('CREATE PROCEDURE rrhh.bajaEmpleado
+CREATE OR ALTER PROCEDURE rrhh.bajaEmpleado
 	@legajo INT
 	AS
 	BEGIN
@@ -283,14 +281,13 @@ BEGIN
 			UPDATE rrhh.Empleado
 			SET habilitado = 0
 			WHERE legajo = @legajo
-			PRINT ''El empleado se dio de baja correctamente''
+			PRINT 'El empleado se dio de baja correctamente'
 		END
 		ELSE
 		BEGIN
-			RAISERROR(''El empleado no existe'', 16, 1)
+			RAISERROR('El empleado no existe', 16, 1)
 		END
-	END;')
-END;
+	END;
 GO
 
 /*--SP'S TABLA CLIENTE--*/
