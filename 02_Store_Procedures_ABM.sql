@@ -80,9 +80,7 @@ CREATE OR ALTER PROCEDURE rrhh.actualizaSucursal
 	END;
 GO
 
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'bajaSucursal' AND schema_id = SCHEMA_ID('rrhh'))
-BEGIN 
-	EXEC('CREATE PROCEDURE rrhh.bajaSucursal
+CREATE OR ALTER PROCEDURE rrhh.bajaSucursal
 	@id INT
 	AS
 	BEGIN
@@ -91,14 +89,13 @@ BEGIN
 			UPDATE rrhh.Sucursal
 			SET habilitado = 0
 			WHERE id = @id
-			PRINT ''La sucursal se dio de baja correctamente''
+			PRINT 'La sucursal se dio de baja correctamente'
 		END
 		ELSE
 		BEGIN
-			RAISERROR(''La sucursal solicitada no existe.'', 16, 1)
+			RAISERROR('La sucursal solicitada no existe.', 16, 1)
 		END
-	END;')
-END;
+	END;
 GO
 
 /*--SP'S TABLA EMPLEADO--*/
