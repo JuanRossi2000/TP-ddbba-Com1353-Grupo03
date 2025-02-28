@@ -181,76 +181,69 @@ END;
 GO
 
 
-CREATE OR ALTER PROCEDURE ventas.importProductos
-    @ubicacionArchivo NVARCHAR(255) 
+CREATE OR ALTER PROCEDURE ventas.importCatalogo
+    @ubicacionArchivo VARCHAR(255)  
 AS
 BEGIN
-    SET NOCOUNT ON;
-
-    -- Crear tabla temporal para almacenar los datos del archivo Excel
-    CREATE TABLE #Import
+    -- Crear tabla temporal para cargar el archivo CSV
+    CREATE TABLE #catalogo
     (
-        IdProducto INT,
-        NombreProducto VARCHAR(100),
-        Proveedor VARCHAR(100),
-        Categoria VARCHAR(100),
-        CantidadPorUnidad VARCHAR(50),
-        PrecioUnidad DECIMAL(10,2)
+        id INT,
+        category VARCHAR(50),
+        [name] VARCHAR(100),
+        price DECIMAL(7,2),
+        reference_price DECIMAL(7,2),
+        reference VARCHAR(7),
+        [date] SMALLDATETIME
     );
 
+    -- Variable con lindo nombre para la cadena dinamica
     DECLARE @sql NVARCHAR(MAX);
 
-    -- Construir la consulta OPENROWSET dinámicamente
+    -- BULK INSERT DINAMICO
     SET @sql = N'
-        INSERT INTO #Import (IdProducto, NombreProducto, Proveedor, Categoria, CantidadPorUnidad, PrecioUnidad)
-        SELECT 
-            IdProducto, NombreProducto, Proveedor, Categoría, CantidadPorUnidad, PrecioUnidad
-        FROM OPENROWSET(
-            ''Microsoft.ACE.OLEDB.12.0'',
-            ''Excel 12.0 Xml;HDR=YES;Database=' + @ubicacionArchivo + ''',
-            ''SELECT IdProducto, NombreProducto, Proveedor, Categoría, CantidadPorUnidad, PrecioUnidad FROM [Listado de Productos$]''
-        );';
+        BULK INSERT #catalogo
+        FROM ''' +@ubicacionArchivo+ N'''
+        WITH
+        (
+            FIELDTERMINATOR = '','', -- Especifica el delimitador de campo (coma en un archivo CSV)
+            ROWTERMINATOR = ''0x0A'', -- Especifica el terminador de fila (salto de línea en un archivo CSV)
+            CODEPAGE = ''65001'', -- Especifica la página de códigos del archivo
+            FORMAT = ''CSV'',
+            FIRSTROW = 2 -- Saltamos la primera fila de encabezados
+        );'
 
-    -- Ejecutar la consulta dinámica para cargar datos en #Import
-    EXEC sp_executesql @sql;
+    -- Ejecutar la consulta dinámica 
+    EXEC (@sql);
 
-    -- Insertar en productos.LineaProducto si no existe la línea 'Importado'
-    IF NOT EXISTS (SELECT 1 FROM productos.LineaProducto WHERE nombre = 'Importado')
-    BEGIN
-        INSERT INTO productos.LineaProducto(nombre) VALUES('Importado');
-    END
-
-    -- Eliminar duplicados en #Import usando una CTE: se conserva sólo la primera aparición de cada NombreProducto
-    ;WITH CTE_importado AS (
+    ;WITH CTE_catalogo AS (
         SELECT 
             *,
             ROW_NUMBER() OVER (
-                PARTITION BY NombreProducto 
-                ORDER BY (SELECT NULL)
+                PARTITION BY [name]
+                ORDER BY price DESC -- Ordena por precio descendente (para sacar ganancias como buen capitalista)
             ) AS duplicado
-        FROM #Import
+        FROM #catalogo
     )
-    DELETE FROM CTE_importado
-    WHERE duplicado > 1;
-
-    -- Insertar los productos en la tabla productos.Producto, evitando insertar duplicados que ya existan
-    INSERT INTO productos.Producto (descripcion, precio, lineaID)
-    SELECT i.NombreProducto, i.PrecioUnidad, l.id 
-    FROM #Import i
-    INNER JOIN productos.LineaProducto l 
-         ON l.nombre = 'Importado'
-    WHERE NOT EXISTS (
-         SELECT 1 
-         FROM productos.Producto p 
-         WHERE p.descripcion = i.NombreProducto
-    );
+    -- Insertar los productos en la tabla productos.Producto
+    INSERT INTO productos.Producto (descripcion, precio, unidadReferencia, lineaID)
+    SELECT 
+        utilidades.remplazar(c.[name]), 
+        c.price, 
+        c.reference, 
+        lp.id
+    FROM CTE_catalogo c
+    INNER JOIN utilidades.lineaTemp l ON c.category = l.producto
+    INNER JOIN productos.LineaProducto lp ON lp.nombre = l.linea
+    WHERE c.duplicado = 1;
 
     PRINT 'Datos cargados exitosamente desde el archivo.';
 
-    -- eliminar temporal (hasta la vista, baby)
-    DROP TABLE IF EXISTS #Import;
+	drop table #catalogo
+	drop table utilidades.lineaTemp
 END;
-GO
+
+go
 
 CREATE OR ALTER PROCEDURE ventas.importProductos
     @ubicacionArchivo NVARCHAR(255) 
