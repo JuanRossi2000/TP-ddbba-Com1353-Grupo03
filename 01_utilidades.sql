@@ -38,7 +38,7 @@ GO
 --FUNCION PARA GENERAR CUIL DE EMPLEADOS
 
 CREATE or ALTER FUNCTION utilidades.GenerarCuil(@dni INT)
-	RETURNS VARCHAR(11)
+	RETURNS CHAR(11)
 	AS
 	BEGIN
 		-- Convertir el DNI a una cadena de 8 caracteres, completando con ceros a la izquierda si es necesario
@@ -78,7 +78,7 @@ CREATE or ALTER FUNCTION utilidades.GenerarCuil(@dni INT)
 
 		RETURN @prefijoStr + @dniStr + CAST(@digito AS CHAR(1));
 	END;
-
+	
 GO
 -----------------------------------------------------------------------------------------------------------------------
 -- Esta funcion fue el resultado de sudor y sangre, no estamos orgullosos pero tampoco arrepentidos, gracias por leer
@@ -91,7 +91,7 @@ GO
 	END
 
 GO
-
+/*
 	CREATE OR ALTER TRIGGER ventas.actualizaPrecioTotal ON ventas.DetalleFactura AFTER INSERT, UPDATE
 	AS
 	BEGIN
@@ -103,5 +103,5 @@ GO
 		)
 		WHERE Factura.id IN (SELECT DISTINCT facturaID FROM inserted);
 	END
-
+*/
 
