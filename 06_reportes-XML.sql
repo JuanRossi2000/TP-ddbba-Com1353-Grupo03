@@ -14,31 +14,26 @@ Nombres y DNI:
 USE Com1353G03
 GO
 --1)
-
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'reporteMensualPorDia' AND schema_id = SCHEMA_ID('reportes'))
+CREATE OR ALTER PROCEDURE reportes.reporteMensualPorDia
+	@mes INT,
+	@anio INT
+AS 
 BEGIN 
-	EXEC('CREATE PROCEDURE reportes.reporteMensualPorDia
-		@mes INT,
-		@anio INT
-	AS 
-	BEGIN 
-		SELECT DATENAME(WEEKDAY, F.fechaHora) AS dia
-			, SUM(F.precioTotal) AS monto
-		FROM ventas.Factura F
-		WHERE DATEPART(MONTH, F.fechaHora) = @mes
-			AND DATEPART(YEAR, F.fechaHora) = @anio
-		GROUP BY DATEPART(WEEKDAY, F.fechaHora) 
-			, DATENAME(WEEKDAY, F.fechaHora)
-		ORDER BY DATEPART(WEEKDAY, F.fechaHora) ASC
-		FOR XML PATH(''recaudacion''), ROOT(''recaudaciones-por-mes-y-dia''), TYPE
-	END;')
+	SELECT DATENAME(WEEKDAY, F.fechaHora) AS dia
+		, SUM(DF.precio * DF.cantidad) AS monto
+	FROM ventas.Factura F
+	INNER JOIN ventas.DetalleFactura DF on DF.facturaID = F.id
+	WHERE DATEPART(MONTH, F.fechaHora) = @mes
+		AND DATEPART(YEAR, F.fechaHora) = @anio
+	GROUP BY DATEPART(WEEKDAY, F.fechaHora) 
+		, DATENAME(WEEKDAY, F.fechaHora)
+	ORDER BY DATEPART(WEEKDAY, F.fechaHora) ASC
+	FOR XML PATH('recaudacion'), ROOT('recaudaciones-por-mes-y-dia'), TYPE
 END;
 GO 
 
 --2)
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'reporteMensualPorTrimestreTurno' AND schema_id = SCHEMA_ID('reportes'))
-BEGIN 
-	EXEC('CREATE PROCEDURE reportes.reporteMensualPorTrimestreTurno
+CREATE OR ALTER PROCEDURE reportes.reporteMensualPorTrimestreTurno
 		@trimestre INT,
 		@anio INT
 	AS 
@@ -46,12 +41,13 @@ BEGIN
 		SELECT DATENAME(MONTH, ventas.Factura.fechaHora) AS nombre
 		, (
 			SELECT rrhh.Empleado.turno turno
-				, SUM(B.precioTotal) monto
+				, SUM(DF.precio * DF.cantidad) monto
 			FROM ventas.Factura B 
 			INNER JOIN rrhh.Empleado ON rrhh.Empleado.legajo = B.empleadoID
+			INNER JOIN ventas.DetalleFactura DF ON DF.facturaID = B.id
 			WHERE DATEPART(MONTH, B.fechaHora) = DATEPART(MONTH, ventas.Factura.fechaHora)
 			GROUP BY rrhh.Empleado.turno
-			FOR XML PATH(''''), TYPE
+			FOR XML PATH(''), TYPE
 		) as [turnos]
 		FROM ventas.Factura
 		WHERE utilidades.getTrimestre(DATEPART(MONTH, ventas.Factura.fechaHora)) = @trimestre
@@ -59,15 +55,12 @@ BEGIN
 		GROUP BY DATEPART(MONTH, ventas.Factura.fechaHora)
 			, DATENAME(MONTH, ventas.Factura.fechaHora)
 		ORDER BY DATEPART(MONTH, ventas.Factura.fechaHora) ASC
-		FOR XML PATH(''mes''), ROOT(''recaudaciones'')
-	END;')
+		FOR XML PATH('mes'), ROOT('recaudaciones')
 END;
 GO
 
 --3)
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'productosVendidosPorRango' AND schema_id = SCHEMA_ID('reportes'))
-BEGIN
-	EXEC('CREATE PROCEDURE reportes.productosVendidosPorRango
+CREATE OR ALTER PROCEDURE reportes.productosVendidosPorRango
 		@fechaMin SMALLDATETIME,
 		@fechaMax SMALLDATETIME
 	AS 
@@ -80,15 +73,12 @@ BEGIN
 		WHERE ventas.Factura.fechaHora BETWEEN @fechaMin AND @fechaMax
 		GROUP BY productos.Producto.descripcion 
 		ORDER BY SUM(ventas.DetalleFactura.cantidad) DESC
-		FOR XML PATH(''producto''), ROOT(''cantidades-por-producto''), TYPE
-	END;')
+		FOR XML PATH('producto'), ROOT('cantidades-por-producto'), TYPE
 END;
 GO
 
 --4)
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'cantidadProductosPorSucursal' AND schema_id = SCHEMA_ID('reportes'))
-BEGIN
-	EXEC('CREATE PROCEDURE reportes.cantidadProductosPorSucursal
+CREATE OR ALTER PROCEDURE reportes.cantidadProductosPorSucursal
 		@fechaMin SMALLDATETIME,
 		@fechaMax SMALLDATETIME
 	AS 
@@ -98,20 +88,16 @@ BEGIN
 		FROM ventas.Factura
 		INNER JOIN ventas.DetalleFactura ON ventas.Factura.id = ventas.DetalleFactura.facturaID
 		INNER JOIN productos.Producto ON ventas.DetalleFactura.productoID = productos.Producto.id
-		INNER JOIN rrhh.Empleado ON ventas.Factura.empleadoID = rrhh.Empleado.legajo
-		INNER JOIN rrhh.Sucursal ON rrhh.Empleado.sucursalId = rrhh.Sucursal.id
+		INNER JOIN rrhh.Sucursal ON ventas.Factura.sucursalID= rrhh.Sucursal.id
 		WHERE ventas.Factura.fechaHora BETWEEN @fechaMin AND @fechaMax
 		GROUP BY rrhh.Sucursal.ubicacion 
 		ORDER BY SUM(ventas.DetalleFactura.cantidad) DESC
- 		FOR XML PATH(''sucursal''), ROOT(''cantidad-por-sucursal''), TYPE
-	END;')
+ 		FOR XML PATH('sucursal'), ROOT('cantidad-por-sucursal'), TYPE
 END;
 GO
 
 --5)
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'top5PorMesSemana' AND schema_id = SCHEMA_ID('reportes'))
-BEGIN
-	EXEC('CREATE PROCEDURE reportes.top5PorMesSemana 
+CREATE OR ALTER PROCEDURE reportes.top5PorMesSemana 
 		@mes INT,
 		@anio INT
 	AS
@@ -135,21 +121,18 @@ BEGIN
 				INNER JOIN productos.Producto P ON B.productoID = P.id 
 				WHERE B.semana = productosPorSemana.semana
 					AND rango <= 5
-				FOR XML PATH(''producto''), ROOT(''productos''), TYPE
+				FOR XML PATH('producto'), ROOT('productos'), TYPE
 			)
 		FROM productosPorSemana
 		GROUP BY productosPorSemana.semana
 		ORDER BY semana ASC
-		FOR XML PATH(''semana''), ROOT(''top-5-productos''), TYPE
-	
-	END;')
+		FOR XML PATH('semana'), ROOT('top-5-productos'), TYPE
+
 END;
 GO
 
 --6)
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'top5PeoresPorMes' AND schema_id = SCHEMA_ID('reportes'))
-BEGIN
-	EXEC('CREATE PROCEDURE reportes.top5PeoresPorMes
+CREATE OR ALTER PROCEDURE reportes.top5PeoresPorMes
 		@mes INT,
 		@anio INT 
 	AS
@@ -169,34 +152,34 @@ BEGIN
 		INNER JOIN productos.Producto ON productosPorMes.productoID = productos.Producto.id
 		WHERE rango <= 5
 		ORDER BY rango ASC
-		FOR XML PATH(''producto''), ROOT(''top-5-peores-productos''), TYPE
-	END;')
+		FOR XML PATH('producto'), ROOT('top-5-peores-productos'), TYPE
 END;
 GO
 
 --7)
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'ventasPorFechaYSucursal' AND schema_id = SCHEMA_ID('reportes'))
-BEGIN
-	EXEC('CREATE PROCEDURE reportes.ventasPorFechaYSucursal
+CREATE OR ALTER PROCEDURE reportes.ventasPorFechaYSucursal
 		@fecha DATE,
 		@sucursal INT
 	AS
 	BEGIN
-		SELECT F.id
+		SELECT F.nro
 			, F.tipo
 			, F.fechaHora
 			, S.ubicacion sucursal
 			, (
 				SELECT E.legajo 
-					, E.nombre + '' '' + E.apellido vendedor
+					, E.nombre + ' ' + E.apellido vendedor
 					, E.cargo
 					, E.turno
-				FOR XML PATH(''''), TYPE
+					, (	SELECT S2.ubicacion
+						FROM rrhh.Sucursal S2
+						WHERE S2.id = E.sucursalId) as [sucursal-empleado]
+				FOR XML PATH(''), TYPE
 			) empleado
 			, ( 
 				SELECT F.genero
 					, F.tipoCliente
-				FOR XML PATH(''''), TYPE
+				FOR XML PATH(''), TYPE
 			) cliente
 			, (
 				SELECT P.descripcion
@@ -206,22 +189,19 @@ BEGIN
 				FROM ventas.DetalleFactura DF
 				INNER JOIN productos.Producto P ON DF.productoID = P.id
 				WHERE DF.facturaId = F.id
-				FOR XML PATH(''producto''), TYPE
+				FOR XML PATH('producto'), TYPE
 			) productos
 		FROM ventas.Factura F
 		INNER JOIN rrhh.Empleado E ON F.empleadoID = E.legajo
-		INNER JOIN rrhh.Sucursal S ON E.sucursalId = S.id 
+		INNER JOIN rrhh.Sucursal S ON F.sucursalId = S.id 
 		WHERE CONVERT(DATE, F.fechaHora) = @fecha
-			AND E.sucursalId = @sucursal
-		FOR XML PATH(''venta''), ROOT(''ventas''), TYPE
-	END;')
+			AND F.sucursalId = @sucursal
+		FOR XML PATH('venta'), ROOT('ventas'), TYPE
 END;
 GO
 
 --8)
-IF NOT EXISTS(SELECT 1 FROM SYS.PROCEDURES WHERE name = 'mayorVendedorPorSucursal' AND schema_id = SCHEMA_ID('reportes'))
-BEGIN
-	EXEC('CREATE PROCEDURE reportes.mayorVendedorPorSucursal
+CREATE OR ALTER PROCEDURE reportes.mayorVendedorPorSucursal
 		@mes INT,
 		@anio INT
 	AS 
@@ -229,13 +209,13 @@ BEGIN
 		;WITH monto_empleado_por_sucursal AS (
 			SELECT rrhh.Sucursal.ubicacion as sucursal
 			, rrhh.Empleado.legajo as legajo
-			, (SELECT EmplAUX.nombre + '' '' + EmplAUX.apellido FROM rrhh.Empleado AS EmplAUX where EmplAUX.legajo = rrhh.Empleado.legajo) as nombre
+			, (SELECT EmplAUX.nombre + ' ' + EmplAUX.apellido FROM rrhh.Empleado AS EmplAUX where EmplAUX.legajo = rrhh.Empleado.legajo) as nombre
 			, SUM(ventas.DetalleFactura.precio * ventas.DetalleFactura.cantidad) as monto
 			, ROW_NUMBER() OVER (PARTITION BY rrhh.Sucursal.ubicacion ORDER BY SUM(ventas.DetalleFactura.precio * ventas.DetalleFactura.cantidad) DESC) AS rn
 			FROM ventas.Factura
 			INNER JOIN ventas.DetalleFactura ON ventas.Factura.id = ventas.DetalleFactura.facturaID
 			INNER JOIN rrhh.Empleado ON ventas.Factura.empleadoID = rrhh.Empleado.legajo
-			INNER JOIN rrhh.Sucursal ON rrhh.Empleado.sucursalId = rrhh.Sucursal.id
+			INNER JOIN rrhh.Sucursal ON ventas.Factura.sucursalID = rrhh.Sucursal.id
 			WHERE DATEPART(MONTH, ventas.Factura.fechaHora) = @mes
 				AND DATEPART(YEAR, ventas.Factura.fechaHora) = @anio
 			GROUP BY rrhh.Sucursal.ubicacion, rrhh.Empleado.legajo
@@ -247,7 +227,6 @@ BEGIN
 			, monto
 		FROM monto_empleado_por_sucursal
 		WHERE rn = 1
-		FOR XML PATH(''vendedor''), ROOT(''vendedores-por-sucursal''), TYPE
-	END;')
+		FOR XML PATH('vendedor'), ROOT('vendedores-por-sucursal'), TYPE
 END;
 GO
