@@ -128,7 +128,7 @@ BEGIN
          direccion VARCHAR(255),
          emailPersonal VARCHAR(255),
          emailEmpresa VARCHAR(255),
-         cuil BIGINT,
+         cuil char(11),
          cargo VARCHAR(30),
          sucursal VARCHAR(20),
          turno VARCHAR(17)
@@ -154,7 +154,7 @@ BEGIN
          ''SELECT [Legajo/ID], Nombre, Apellido, DNI, Direccion, [email personal], [email empresa], CUIL, cargo, sucursal, turno FROM [Empleados$]''
     );';
     EXEC sp_executesql @cadena;
-
+	
     -- Insertar los empleados en la tabla definitiva, relacionando la sucursal mediante JOIN y evitando duplicados por legajo
     INSERT INTO rrhh.Empleado(legajo, nombre, apellido, dni, direccion, emailPersonal, emailEmpresa, cuil, cargo, sucursalId, turno)
     SELECT e.legajo,
@@ -261,9 +261,8 @@ BEGIN
         CantidadPorUnidad VARCHAR(50),
         PrecioUnidad DECIMAL(10,2)
     );
-
+	
     DECLARE @sql NVARCHAR(MAX);
-
     -- Construir la consulta OPENROWSET dinámicamente
     SET @sql = N'
         INSERT INTO #Import (IdProducto, NombreProducto, Proveedor, Categoria, CantidadPorUnidad, PrecioUnidad)
@@ -479,7 +478,7 @@ BEGIN
     END
 
     -- 5. Insertar registros en la tabla Factura (evitando duplicados basados en el campo nro)
-    INSERT INTO ventas.Factura (nro, tipo, tipoCliente, genero, fechaHora, empleadoID, pagoID, estadoID, precioTotal, identificadorPago)
+    INSERT INTO ventas.Factura (nro, tipo, tipoCliente, genero, fechaHora, empleadoID, pagoID, estadoID, identificadorPago, sucursalId)
     SELECT v.ID,
            v.tipoFactura,
            CASE ABS(CHECKSUM(NEWID())) % 2
@@ -495,10 +494,11 @@ BEGIN
                 WHEN m.descripcionIng = 'Cash' THEN 2 
                 ELSE 2
            END AS estadoID,
-           v.cantidad * v.precio_unitario AS precioTotal,
-           v.identificador AS identificadorPago
+           v.identificador AS identificadorPago,
+		   s.id
     FROM #ventas2 v
-    JOIN ventas.mediopago m ON m.descripcionIng = v.medioPago
+    inner JOIN ventas.mediopago m ON m.descripcionIng = v.medioPago
+	inner JOIN rrhh.Sucursal s on v.ciudad = s.ciudad
     WHERE NOT EXISTS (
          SELECT 1 FROM ventas.Factura f WHERE f.nro = v.ID
     );
@@ -536,4 +536,3 @@ BEGIN
 	EXEC sp_configure 'Show Advanced Options', 0;
 		RECONFIGURE;
 END;
-
