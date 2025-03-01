@@ -91,17 +91,18 @@ GO
 	END
 
 GO
-/*
-	CREATE OR ALTER TRIGGER ventas.actualizaPrecioTotal ON ventas.DetalleFactura AFTER INSERT, UPDATE
-	AS
-	BEGIN
-		UPDATE ventas.Factura
-		SET precioTotal = (
-			SELECT ISNULL(SUM(df.precio * df.cantidad), 0)
-			FROM ventas.DetalleFactura df
-			WHERE df.facturaID = Factura.id
-		)
-		WHERE Factura.id IN (SELECT DISTINCT facturaID FROM inserted);
-	END
-*/
+	
+CREATE FUNCTION ventas.fn_CalculaPrecioTotal(@facturaID INT)
+RETURNS DECIMAL(10,2)
+AS
+BEGIN
+    DECLARE @precioTotal DECIMAL(10,2);
+    
+    SELECT @precioTotal = ISNULL(SUM(precio * cantidad), 0)
+    FROM ventas.DetalleFactura
+    WHERE facturaID = @facturaID;
+    
+    RETURN @precioTotal;
+END
+GO
 
