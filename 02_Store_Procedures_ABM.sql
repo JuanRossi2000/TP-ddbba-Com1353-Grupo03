@@ -618,11 +618,12 @@ CREATE OR ALTER PROCEDURE ventas.altaFactura
 		(
 		@productosXML XML,
 		@tipoFactura CHAR(1),
-		@empleadoId INT,
 		@tipoCliente VARCHAR(20),
 		@generoCliente VARCHAR(20),
+		@empleadoId INT,
 		@pagoId INT,
-		@identPago VARCHAR(25)
+		@identPago VARCHAR(25), 
+		@sucursalId INT
 		)
 	AS
 	BEGIN
@@ -679,20 +680,12 @@ CREATE OR ALTER PROCEDURE ventas.altaFactura
 
 	BEGIN TRY
 
-		-- Generar un número aleatorio de 9 dígitos
-		SET @nroFacturaSinFormatear = ABS(CHECKSUM(NEWID())) % 900000000 + 100000000; 
+		SELECT @nroFacturaSinFormatear = ISNULL(MAX(CAST(REPLACE(nro, '-', '') AS INT)), 99999999) + 1
+		FROM ventas.Factura;
 
-		-- Formatearlo como XXX-XX-XXXX
-		SET @nroFacturaFormateada = STUFF(STUFF(CAST(@nroFacturaSinFormatear as char(9)), 4, 0, '-'), 7, 0, '-');
-	
-	WHILE EXISTS (SELECT 1 FROM Factura WHERE nro = @nroFacturaFormateada)
-		BEGIN
-			-- Si el numero de factura ya existe dentro de la tabla genero uno nuevo
-			SET @nroFacturaSinFormatear = ABS(CHECKSUM(NEWID())) % 900000000 + 100000000; 
+		-- Formatearlo a XXX-XX-XXXX
+		SET @nroFacturaFormateada = STUFF(STUFF(CAST(@nroFacturaSinFormatear AS CHAR(9)), 4, 0, '-'), 7, 0, '-');
 
-			-- Formatearlo como XXX-XX-XXXX
-			SET @nroFacturaFormateada = STUFF(STUFF(CAST(@nroFacturaSinFormatear as varchar(9)), 4, 0, '-'), 7, 0, '-');
-	END
 
 		SET @descMedioPago = (SELECT descripcionEsp FROM ventas.MedioPago WHERE id = @pagoId AND habilitado = 1);
 
@@ -708,12 +701,11 @@ CREATE OR ALTER PROCEDURE ventas.altaFactura
 					NULL  -- En caso de que no coincida con ninguno de los valores
 		END;
 
-
-		INSERT INTO ventas.Factura (nro, tipo, fechaHora, empleadoID, tipoCliente, genero, pagoID, estadoId, identificadorPago)
-		VALUES (@nroFacturaFormateada,@tipoFactura, CAST(getdate() AS smalldatetime), @empleadoId, @tipoCliente, @generoCliente, @pagoId, @idEstado, @identPago)
-
+		INSERT INTO ventas.Factura (nro, tipo, fechaHora, empleadoID, tipoCliente, genero, pagoID, estadoId, identificadorPago, sucursalId)
+		VALUES (@nroFacturaFormateada,@tipoFactura, CAST(getdate() AS smalldatetime), @empleadoId, @tipoCliente, @generoCliente, @pagoId, @idEstado, @identPago, @sucursalId )
+		
 		SET @idFactura = (SELECT id FROM ventas.Factura WHERE nro = @nroFacturaFormateada AND habilitado = 1);
-
+		
 		INSERT INTO ventas.DetalleFactura (facturaID, item, cantidad, precio, productoID)
 		SELECT 
 			@idFactura, 
