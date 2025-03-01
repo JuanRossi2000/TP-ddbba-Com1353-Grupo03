@@ -92,7 +92,7 @@ GO
 
 GO
 	
-CREATE FUNCTION ventas.fn_CalculaPrecioTotal(@facturaID INT)
+CREATE OR ALTER FUNCTION ventas.fn_CalculaPrecioTotal(@facturaID INT)
 RETURNS DECIMAL(10,2)
 AS
 BEGIN
