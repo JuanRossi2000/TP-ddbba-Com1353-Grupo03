@@ -50,9 +50,10 @@ CREATE USER UsuarioVentas FOR LOGIN PersonaGenerica;
 
 GRANT SELECT, INSERT ON SCHEMA::ventas TO UsuarioVentas;
 DENY SELECT, INSERT ON ventas.NotaCredito TO UsuarioVentas;
+DENY EXECUTE ON ventas.altaNotaDeCredito TO UsuarioVentas;
 
 CREATE LOGIN SupervisorGenerico WITH PASSWORD = '09/12/18Madrid!';
 CREATE USER UsuarioSupervisor FOR LOGIN SupervisorGenerico;
 
-GRANT SELECT, INSERT, DELETE ON SCHEMA::ventas TO UsuarioSupervisor;
+GRANT SELECT, INSERT, DELETE, execute ON SCHEMA::ventas TO UsuarioSupervisor;
 
