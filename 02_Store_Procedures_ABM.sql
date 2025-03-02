@@ -698,7 +698,8 @@ CREATE OR ALTER PROCEDURE ventas.altaFactura
 				WHEN @descMedioPago = 'Billetera Electronica' THEN 
 					(SELECT id FROM ventas.Estado WHERE descripcion = 'Pagado')
 				ELSE 
-					NULL  -- En caso de que no coincida con ninguno de los valores
+					NULL
+					-- En caso de que no coincida con ninguno de los valores
 		END;
 
 		INSERT INTO ventas.Factura (nro, tipo, fechaHora, empleadoID, tipoCliente, genero, pagoID, estadoId, identificadorPago, sucursalId)
@@ -801,12 +802,11 @@ RAISERROR('El ID de empleado no puede ser menor o igual a cero.', 16, 1);
 RETURN;
 END
 
-
-IF IS_MEMBER('Supervior') <> 1
-    BEGIN
-        RAISERROR('No tiene permisos para generar una nota de crédito.', 16, 1);
-        RETURN;
-    END
+IF EXISTS (select 1 from ventas.NotaCredito where @facturaId = facturaID)
+BEGIN
+RAISERROR('Esta factura ya tiene una nota de credito', 16, 1);
+RETURN;
+END
 
 DECLARE @EstadoPago VARCHAR(20);
 
@@ -815,14 +815,15 @@ DECLARE @EstadoPago VARCHAR(20);
     JOIN ventas.Estado e ON f.estadoId = e.id
     WHERE f.id = @FacturaID;
 
-    IF (@EstadoPago IS NULL OR @EstadoPago <> 'pagada')
+    IF (@EstadoPago IS NULL OR @EstadoPago <> 'Pagado')
     BEGIN
         RAISERROR('La factura no está en estado pagada. No se puede generar la nota de crédito.', 16, 1);
         RETURN;
     END
 
 DECLARE @precioTotal DECIMAL(10,2);
-SET @precioTotal = (SELECT precioTotal FROM ventas.Factura WHERE id = @facturaId);
+with CTE(total) as (select precio * cantidad from DetalleFactura where facturaID = @facturaId)
+select @precioTotal = sum(total) from CTE
 
 INSERT INTO ventas.NotaCredito (facturaID, empleadoId, monto,tipoNota)
     VALUES (@FacturaID, @empleadoId, @precioTotal, @TipoNota);
