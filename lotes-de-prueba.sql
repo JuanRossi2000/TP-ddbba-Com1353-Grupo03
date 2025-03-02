@@ -10,6 +10,9 @@ Nombres y DNI:
 -Juan Ignacio Rossi, 42115962
 -Joel Fabián Stivala Patiño, 42825990
 */
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+--FALTAN: Lotes de prueba para alta de NC, Lotes de prueba para actualizar detalleFact, Lotes de prueba para permisos(depende si alcanza con los de las NC
+----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 USE Com1353G03
 	 
@@ -44,20 +47,20 @@ EXEC rrhh.actualizaSucursal @id = 1, @habilitado = 1
 
 /*--SP'S TABLA EMPLEADOS--*/
 --APROVECHANDO El registro de la tabla Sucursal, vamos a cargar empleados que trabajen en ella
-EXEC rrhh.altaEmpleado @nombre = NULL, @apellido = NULL, @dni = -20, @direccion = 'Calle Falsa 123', @emailPersonal = '', @emailEmpresa = 'email@empresa.com', @cuil = -12345, @cargo = NULL, @sucursal = 10, @turno = 'T'
+EXEC rrhh.altaEmpleado @nombre = NULL, @apellido = NULL, @dni = -20, @direccion = 'Calle Falsa 123', @emailPersonal = '', @emailEmpresa = 'email@empresa.com', @cuil = -12345, @cargo = NULL, @sucursal = 10, @turno = 'TT'
 --> Se comprueba que la validacion de NULL o datos inválidos sea correcta.
 
-EXEC rrhh.altaEmpleado @nombre = 'NATALIA', @apellido = 'NATALIA', @dni = 99999999, @direccion = 'Calle Falsa 123', @emailPersonal = '', @emailEmpresa = 'email@empresa.com', @cuil = 12345, @cargo = 'JEFE', @sucursal = 10, @turno = 'T'
+EXEC rrhh.altaEmpleado @nombre = 'NATALIA', @apellido = 'NATALIA', @dni = 99999999, @direccion = 'Calle Falsa 123', @emailPersonal = '', @emailEmpresa = 'email@empresa.com', @cuil = 12345, @cargo = 'Gerente de sucursal', @sucursal = 10, @turno = 'TT'
 --> Se verifica el conflicto por Foreing Key, ya que la sucursal con ID 10 no existe.
 
-EXEC rrhh.altaEmpleado @nombre = 'NATALIA', @apellido = 'NATALIA', @dni = 99999999, @direccion = 'Calle Falsa 123', @emailPersonal = '', @emailEmpresa = 'email@empresa.com', @cuil = 12345, @cargo = 'JEFE', @sucursal = 1, @turno = 'T'
+EXEC rrhh.altaEmpleado @nombre = 'NATALIA', @apellido = 'NATALIA', @dni = 99999999, @direccion = 'Calle Falsa 123', @emailPersonal = '', @emailEmpresa = 'email@empresa.com', @cuil = 12345, @cargo = 'Gerente de sucursal', @sucursal = 1, @turno = 'TT'
 --> SELECT * FROM rrhh.Empleado --> Los datos cargados por el SP son correctos.
 
-EXEC rrhh.altaEmpleado @nombre = 'NATALIA', @apellido = 'NATALIA', @dni = 99999999, @direccion = 'Calle Falsa 123', @emailPersonal = '', @emailEmpresa = 'email@empresa.com', @cuil = 12345, @cargo = 'JEFE', @sucursal = 1, @turno = 'T'
+EXEC rrhh.altaEmpleado @nombre = 'NATALIA', @apellido = 'NATALIA', @dni = 99999999, @direccion = 'Calle Falsa 123', @emailPersonal = '', @emailEmpresa = 'email@empresa.com', @cuil = 12345, @cargo = 'Gerente de sucursal', @sucursal = 1, @turno = 'TT'
 --> No se permite agregar un empleado con el mismo dni.
 
 
-EXEC rrhh.actualizaEmpleado @legajo = 1, @nombre = 'PEDRO', @apellido = 'PEREZ', @dni = 11111111, @direccion = 'AVENIDA Falsa 123', @emailPersonal = 'HOLA@MAIL.COM', @emailEmpresa = 'PEDRO@empresa.com', @cuil = 54321, @cargo = 'REPOSITOR', @turno = 'M' 
+EXEC rrhh.actualizaEmpleado @legajo = 1, @nombre = 'PEDRO', @apellido = 'PEREZ', @dni = 11111111, @direccion = 'AVENIDA Falsa 123', @emailPersonal = 'HOLA@MAIL.COM', @emailEmpresa = 'PEDRO@empresa.com', @cuil = 54321, @cargo = 'Cajero', @turno = 'TM' 
 --> SELECT * FROM rrhh.Empleado --> Nuevamente probamos los datos cargados por el SP y como vemos, son correctos.
 
 EXEC rrhh.bajaEmpleado 1
@@ -168,7 +171,20 @@ EXEC productos.bajaProducto @id = 1
 EXEC productos.actualizaProducto @id = 1, @habilitado = 1
 --> SELECT * FROM productos.Producto --> Los datos se actualizaron tal cual fueron enviados en el SP.
 
-/*--SP'S TABLA PRODUCTO--*/
+/*--SP'S TABLA FACTURA--*/
+
+--Necesario para Alta de factura
+--------------------------------------------------------------------------------
+    IF NOT EXISTS(SELECT 1 FROM ventas.Estado WHERE descripcion = 'Pendiente')
+    BEGIN
+         INSERT INTO ventas.Estado(descripcion) VALUES ('Pendiente');
+    END
+    IF NOT EXISTS(SELECT 1 FROM ventas.Estado WHERE descripcion = 'Pagado')
+    BEGIN
+         INSERT INTO ventas.Estado(descripcion) VALUES ('Pagado');
+    END
+--------------------------------------------------------------------------------
+
 EXEC ventas.altaFactura @productosXML = '', @tipoFactura = 'A', @empleadoId = 1, @tipoCliente = 'Member', @generoCliente = 'Female', @pagoId = 1, @identPago = '4660-1046-8238-6585'
 -- No se puede insertar una factura con un XML vacio
 
@@ -256,27 +272,51 @@ EXEC ventas.altaFactura
 		@tipoFactura = 'A', @empleadoId = 1, @tipoCliente = 'Member', @generoCliente = 'Female', @pagoId = 1, @identPago = '', @sucursalID = 1
 --> No se puede insertar un identificador de pago vacio
 
+
 EXEC ventas.altaFactura 
 	@productosXML =
 	'<productos>
 		<producto>
 			<id>1</id>
-			<idProducto>10</idProducto>
 			<cantComprada>2</cantComprada>
+			<idProducto>1</idProducto>
 		</producto>
 	</productos>', 
-		@tipoFactura = 'A', @empleadoId = 1, @tipoCliente = 'Member', @generoCliente = 'Female', @pagoId = 1, @identPago = '4660-1046-8238-6585', @sucursalID = 1
---> SELECT * FROM ventas.Factura ORDER BY nro--> Se dio de alta correctamente
+		@tipoFactura = 'A', @tipoCliente = 'Member', @generoCliente = 'Female', @empleadoId = 1, @pagoId = 1, @identPago = '4660-1046-8238-6585', @sucursalID = 1
+--> SELECT * FROM ventas.Factura ORDER BY nro --> Se dio de alta correctamente
 
 EXEC ventas.bajaFactura @id = 1
 --> SELECT * FROM ventas.Factura --> La baja logica se llevo a cabo correctamente.
 
 /*--SP'S TABLA Nota de Credito--*/
-EXEC ventas.altaNotaDeCredito @facturaId = 0, @tipoNota = 'D'
+EXEC ventas.altaNotaDeCredito @facturaId = 0, @tipoNota = 'D', @empleadoId = '1'
 --> No se puede insertar una nota de credito para una factura con valor 0
 
-EXEC ventas.altaNotaDeCredito @facturaId = -1000, @tipoNota = 'D'
+EXEC ventas.altaNotaDeCredito @facturaId = -1000, @tipoNota = 'D', @empleadoId = '1'
 --> No se puede insertar una nota de credito para una factura con valor Negativo
 
-EXEC ventas.altaNotaDeCredito @facturaId = 1, @tipoNota = ''
+EXEC ventas.altaNotaDeCredito @facturaId = 1, @tipoNota = '', @empleadoId = '1'
 --> No se puede insertar una nota de credito con un tipo vacio
+
+EXEC ventas.altaNotaDeCredito @facturaId = 1, @tipoNota = 'D', @empleadoId = '0'
+-->No se puede insertar una nota de credito con un id de empleado menor a 1
+
+EXECUTE AS USER = 'UsuarioVentas';
+exec ventas.altaNotaDeCredito @facturaId = 1, @tipoNota = 'D', @empleadoId = 1
+revert;
+--> No se puede insertar una nota de credito por permisos de usuario
+
+EXECUTE AS USER = 'UsuarioSupervisor';
+exec ventas.altaNotaDeCredito @facturaId = 1, @tipoNota = 'D', @empleadoId = 1
+--> SELECT * FROM ventas.NotaCredito --> Se dio de alta correctamente
+
+EXECUTE AS USER = 'UsuarioSupervisor';
+exec ventas.altaNotaDeCredito @facturaId = 1, @tipoNota = 'D', @empleadoId = 1
+--> No se permiten multiples NC para la misma factura
+
+
+
+
+
+
+
