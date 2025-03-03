@@ -837,8 +837,8 @@ INSERT INTO ventas.NotaCredito (facturaID, empleadoId, monto,tipoNota)
 END;
 GO
 
-/*--SP'S TABLA NOTACREDITO--*/
-CREATE OR ALTER PROCEDURE altaMoneda
+/*--SP'S TABLA Moneda--*/
+CREATE OR ALTER PROCEDURE utilidades.altaMoneda
 @codigo CHAR(3),
 @valor DECIMAL(10,2)
 AS
@@ -867,7 +867,7 @@ BEGIN
 END;
 GO
 
-CREATE OR ALTER PROCEDURE actualizaMoneda
+CREATE OR ALTER PROCEDURE utilidades.actualizaMoneda
 @codigo CHAR(3),
 @valor DECIMAL(10,2)
 AS
@@ -898,7 +898,7 @@ BEGIN
 END;
 GO
 
-CREATE OR ALTER PROCEDURE bajaMoneda
+CREATE OR ALTER PROCEDURE utilidades.bajaMoneda
 @codigo CHAR(3)
 AS
 BEGIN
