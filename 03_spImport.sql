@@ -370,7 +370,7 @@ END
 
 -- Insertar los productos en la tabla productos.Producto sin duplicados
 INSERT INTO productos.Producto (descripcion, precio, lineaID)
-SELECT e.producto, e.precio, l.id 
+SELECT e.producto, e.precio * utilidades.obtenerPrecioMoneda('USD'), l.id 
 FROM #Electronic e
 INNER JOIN productos.LineaProducto l ON l.nombre = 'Electronicos'
 WHERE NOT EXISTS (
