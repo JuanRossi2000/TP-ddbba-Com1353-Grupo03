@@ -106,3 +106,16 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER FUNCTION utilidades.obtenerPrecioMoneda
+	(@codigo CHAR(3))
+RETURNS DECIMAL(10, 2)
+AS
+BEGIN
+	DECLARE @precioActual DECIMAL(10,2)
+	
+	SET @precioActual = (SELECT valor FROM utilidades.Moneda WHERE codigo = @codigo)
+
+	RETURN @precioActual
+END;
+GO
+
