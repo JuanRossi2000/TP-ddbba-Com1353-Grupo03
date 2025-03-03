@@ -796,6 +796,12 @@ RAISERROR('El id de factura no existe', 16, 1);
 RETURN;
 END
 
+IF NOT EXISTS (SELECT 1 FROM rrhh.Empleado WHERE legajo = @empleadoId)
+BEGIN
+RAISERROR('El legajo del empleado no existe', 16, 1);
+RETURN;
+END
+
 IF @empleadoId <= 0
 BEGIN
 RAISERROR('El ID de empleado no puede ser menor o igual a cero.', 16, 1);
@@ -830,3 +836,78 @@ INSERT INTO ventas.NotaCredito (facturaID, empleadoId, monto,tipoNota)
 
 END;
 GO
+
+/*--SP'S TABLA NOTACREDITO--*/
+CREATE OR ALTER PROCEDURE altaMoneda
+@codigo CHAR(3),
+@valor DECIMAL(10,2)
+AS
+BEGIN
+	IF ISNULL(@codigo, '') = ''
+		BEGIN
+			RAISERROR('El codigo de la moneda no puede ser vacio.', 16, 1);
+			RETURN;
+		END
+
+	IF @valor <= 0
+		BEGIN
+			RAISERROR('El valor de la moneda no puede ser menor o igual a cero.', 16, 1);
+			RETURN;
+		END
+
+	IF EXISTS (SELECT 1 FROM utilidades.Moneda WHERE codigo = @codigo)
+		BEGIN
+			RAISERROR('La moneda ya existe, si quiere modificar su valor use actualizaMoneda.', 16, 1);
+			RETURN;
+		END
+
+	INSERT INTO utilidades.Moneda(codigo, valor)
+	VALUES(@codigo, @valor);
+
+END;
+GO
+
+CREATE OR ALTER PROCEDURE actualizaMoneda
+@codigo CHAR(3),
+@valor DECIMAL(10,2)
+AS
+BEGIN
+		IF ISNULL(@codigo, '') = ''
+		BEGIN
+			RAISERROR('El codigo de la moneda no puede ser vacio.', 16, 1);
+			RETURN;
+		END
+
+	IF @valor <= 0
+		BEGIN
+			RAISERROR('El valor de la moneda no puede ser menor o igual a cero.', 16, 1);
+			RETURN;
+		END
+
+	IF EXISTS (SELECT 1 FROM utilidades.Moneda WHERE codigo = @codigo)
+		BEGIN
+			UPDATE utilidades.Moneda
+			SET valor = @valor
+			WHERE codigo = @codigo
+		END
+	ELSE
+		BEGIN
+			RAISERROR('La moneda ya existe, si quiere modificar su valor use actualizaMoneda.', 16, 1);
+		END
+
+END;
+GO
+
+CREATE OR ALTER PROCEDURE bajaMoneda
+@codigo CHAR(3)
+AS
+BEGIN
+			IF ISNULL(@codigo, '') = ''
+		BEGIN
+			RAISERROR('El codigo de la moneda no puede ser vacio.', 16, 1);
+			RETURN;
+		END
+
+	DELETE FROM utilidades.Moneda WHERE codigo = @codigo
+
+END
