@@ -1,14 +1,14 @@
 /*
 Parte cumplida: Creacion Bd, esquemas, tablas e indices
 fecha de entrega: 27/02/25
-Comisión: 1353
-Número de grupo: 3
+ComisiÃ³n: 1353
+NÃºmero de grupo: 3
 Materia: Bases de datos Aplicadas
 Nombres y DNI: 
 -Bautista Rios Di Gaeta, 46431397
 -Samuel Gallardo, 45926613
 -Juan Ignacio Rossi, 42115962
--Joel Fabián Stivala Patiño, 42825990
+-Joel FabiÃ¡n Stivala PatiÃ±o, 42825990
 */
 IF NOT EXISTS(	SELECT 1 FROM SYS.DATABASES WHERE name = 'Com1353G03')
 BEGIN
@@ -195,11 +195,21 @@ BEGIN
 		empleadoId INT NOT NULL,
 		fecha DATETIME DEFAULT GETDATE(),
 		monto DECIMAL(10,2) NOT NULL,
-		tipoNota CHAR(1) NOT NULL,  -- 'D' para devolución, 'S' para sustitución
+		tipoNota CHAR(1) NOT NULL,  -- 'D' para devoluciÃ³n, 'S' para sustituciÃ³n
 		FOREIGN KEY (empleadoId) REFERENCES rrhh.Empleado(legajo),
 		FOREIGN KEY (facturaID) REFERENCES ventas.Factura(id),
 		CONSTRAINT CHK_TipoNota CHECK (tipoNota = 'D' OR tipoNota = 'S'),
 		CONSTRAINT CHK_montoNota CHECK (monto > 0)
+	);
+END;
+GO
+
+IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = 'utilidades' AND TABLE_NAME = 'Moneda')
+BEGIN
+	CREATE TABLE utilidades.Moneda (
+		codigo char(3) PRIMARY KEY,
+		valor decimal(10,2) NOT NULL,
+		CONSTRAINT CHK_valor CHECK (valor > 0)
 	);
 END;
 GO
