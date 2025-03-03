@@ -13,7 +13,7 @@ Nombres y DNI:
 
 USE Com1353G03
 
-exec utilidades.altaMoneda 'USD', 1230 
+exec utilidades.altaMoneda 'USD', 1230 --SE AGREGA UN VALOR DE EJEMPLO PARA EL PRECIO DOLAR PARA LOS PRODUCTOS QUE LO UTILIZAN
   
 exec ImportarInfoComplementaria 'RUTA DE ARCHIVO'
 
