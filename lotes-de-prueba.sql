@@ -314,9 +314,41 @@ EXECUTE AS USER = 'UsuarioSupervisor';
 exec ventas.altaNotaDeCredito @facturaId = 1, @tipoNota = 'D', @empleadoId = 1
 --> No se permiten multiples NC para la misma factura
 
+/*--SP'S TABLA Moneda--*/
 
+--- Vamos a insertar a la tabla el valor del Yen Japones
+EXEC utilidades.altaMoneda 'JPY', 7.13
+--> SELECT * FROM utilidades.Moneda --> Podemos ver que se dio de alta la moneda.
 
+EXEC utilidades.altaMoneda 'JPY', 7.13
+--> Si tratamos de volver a insertarla nos da error ya que la misma ya existe
 
+EXEC utilidades.altaMoneda '', 7.13
+--> No se puede insertar un codigo de moneda vacio
 
+EXEC utilidades.altaMoneda 'CHF', 0
+--> No se puede insertar un valor de moneda en 0
 
+EXEC utilidades.altaMoneda 'CHF', -7.13
+--> No se puede insertar un valor de moneda negativo
 
+EXEC utilidades.actualizaMoneda 'JPY', 10
+--> SELECT * FROM utilidades.Moneda --> Podemos ver que se modifico el valor de la moneda.
+
+EXEC utilidades.actualizaMoneda '', 10
+--> No se puede actualziar un codigo de moneda vacio
+
+EXEC utilidades.actualizaMoneda 'JPY', 0
+--> No se puede actualizar el valor de la moneda por 0
+
+EXEC utilidades.actualizaMoneda 'JPY', -10
+--> No se puede actualziar el valor de la moneda por un numero negativo
+
+EXEC utilidades.actualizaMoneda 'CHF', 10
+--> No se puede actualizar una moneda inexistente
+
+EXEC utilidades.bajaMoneda 'JPY'
+--> SELECT * FROM utilidades.Moneda --> Podemos ver que se dio de baja la moneda.
+
+EXEC utilidades.bajaMoneda 'CHF'
+--> No podemos dar de baja una moneda inexistente
