@@ -11,8 +11,6 @@ Nombres y DNI:
 -Joel Fabián Stivala Patiño, 42825990
 */
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
---FALTAN: Lotes de prueba para alta de NC, Lotes de prueba para actualizar detalleFact, Lotes de prueba para permisos(depende si alcanza con los de las NC
-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 USE Com1353G03
 	 
