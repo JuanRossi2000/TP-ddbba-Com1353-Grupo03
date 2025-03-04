@@ -124,7 +124,7 @@ BEGIN
 	CREATE TABLE productos.Producto(	
 		id int PRIMARY KEY identity(1,1),
 		descripcion varchar(100),
-		precio decimal(7,2),
+		precio decimal(12,2),
 		unidadReferencia varchar(7) DEFAULT 'UNIDAD',
 		lineaID int,
 		habilitado bit DEFAULT 1
