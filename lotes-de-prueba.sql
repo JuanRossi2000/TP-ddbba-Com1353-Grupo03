@@ -1,6 +1,6 @@
 /*
 Parte cumplida: Lotes de pruebas para los Stored procedures de ABM de las tablas
-fecha de entrega: 28/02/25
+fecha de entrega: 04/03/2025
 Comisión: 1353
 Número de grupo: 3
 Materia: Bases de datos Aplicadas
