@@ -1,6 +1,6 @@
 /*
 Parte cumplida: Creacion Bd, esquemas, tablas e indices
-fecha de entrega: 27/02/25
+fecha de entrega: 04/03/25
 Comisión: 1353
 Número de grupo: 3
 Materia: Bases de datos Aplicadas
